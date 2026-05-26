@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Fee Payment | Pinnacle Scholars</title>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;
+    overflow:hidden;
+    background:linear-gradient(135deg,#0f172a,#1e293b,#111827);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+}
+
+/* WATER DROPLETS */
+
+.droplet{
+    position:absolute;
+    width:12px;
+    height:12px;
+    background:rgba(255,255,255,0.15);
+    border-radius:50%;
+    backdrop-filter:blur(3px);
+    animation:drop linear infinite;
+}
+
+@keyframes drop{
+
+    from{
+        transform:translateY(-100px);
+        opacity:0;
+    }
+
+    to{
+        transform:translateY(110vh);
+        opacity:1;
+    }
+}
+
+/* CARD */
+
+.payment-card{
+
+    width:450px;
+    max-width:95%;
+
+    background:rgba(255,255,255,0.08);
+
+    border:1px solid rgba(255,255,255,0.1);
+
+    backdrop-filter:blur(14px);
+
+    border-radius:24px;
+
+    padding:35px;
+
+    color:white;
+
+    position:relative;
+
+    z-index:10;
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,0.4);
+}
+
+.payment-card h1{
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+    font-size:2rem;
+
+    color:#38bdf8;
+}
+
+.input-box{
+
+    margin-bottom:20px;
+}
+
+.input-box label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#cbd5e1;
+}
+
+.input-box input{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    outline:none;
+
+    border-radius:12px;
+
+    background:rgba(255,255,255,0.08);
+
+    color:white;
+
+    font-size:1rem;
+}
+
+.fetch-btn,
+.pay-btn{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    font-size:1rem;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:0.3s;
+}
+
+.fetch-btn{
+
+    background:#0ea5e9;
+
+    color:white;
+}
+
+.fetch-btn:hover{
+
+    background:#0284c7;
+}
+
+.pay-btn{
+
+    background:#22c55e;
+
+    color:white;
+
+    margin-top:15px;
+}
+
+.pay-btn:hover{
+
+    background:#16a34a;
+}
+
+.student-details{
+
+    margin-top:25px;
+
+    background:rgba(255,255,255,0.05);
+
+    padding:20px;
+
+    border-radius:16px;
+
+    display:none;
+}
+
+.student-details p{
+
+    margin-bottom:12px;
+
+    color:#e2e8f0;
+}
+
+.payment-options{
+
+    margin-top:20px;
+}
+
+select{
+
+    width:100%;
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:10px;
+
+    margin-top:10px;
+
+    background:rgba(255,255,255,0.08);
+
+    color:white;
+}
+
+.partial-box{
+
+    margin-top:15px;
+
+    display:none;
+}
+
+.partial-box input{
+
+    width:100%;
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:rgba(255,255,255,0.08);
+
+    color:white;
+}
+
+.home-link{
+
+    text-align:center;
+
+    margin-top:20px;
+}
+
+.home-link a{
+
+    color:#38bdf8;
+
+    text-decoration:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- DROPLETS -->
+
+<script>
+
+for(let i=0;i<40;i++){
+
+    const drop=document.createElement('div');
+
+    drop.classList.add('droplet');
+
+    drop.style.left=Math.random()*100+'vw';
+
+    drop.style.animationDuration=
+    (Math.random()*5+5)+'s';
+
+    drop.style.animationDelay=
+    Math.random()*5+'s';
+
+    drop.style.width=
+    drop.style.height=
+    (Math.random()*10+5)+'px';
+
+    document.body.appendChild(drop);
+}
+
+</script>
+
+<div class="payment-card">
+
+    <h1>Fee Payment Portal</h1>
+
+    <div class="input-box">
+
+        <label>Enter Student ID</label>
+
+        <input
+            type="text"
+            id="studentId"
+            placeholder="PS-I-2026-0001"
+        >
+    </div>
+
+    <button
+        class="fetch-btn"
+        onclick="fetchStudentDetails()"
+    >
+        Fetch Details
+    </button>
+
+    <div
+        class="student-details"
+        id="studentDetails"
+    >
+
+        <p><strong>Name:</strong> <span id="sName"></span></p>
+
+        <p><strong>Domain:</strong> <span id="sDomain"></span></p>
+
+        <p><strong>Total Fees:</strong> ₹<span id="sTotal"></span></p>
+
+        <p><strong>Paid Fees:</strong> ₹<span id="sPaid"></span></p>
+
+        <p><strong>Remaining Fees:</strong> ₹<span id="sRemain"></span></p>
+
+        <div class="payment-options">
+
+            <label>Select Payment Type</label>
+
+            <select id="paymentType" onchange="togglePartialBox()">
+
+                <option value="FULL">Full Payment</option>
+
+                <option value="PARTIAL">Partial Payment</option>
+
+            </select>
+
+            <div class="partial-box" id="partialBox">
+
+                <input
+                    type="number"
+                    id="partialAmount"
+                    placeholder="Enter Partial Amount"
+                >
+            </div>
+
+            <button
+                class="pay-btn"
+                onclick="continuePayment()"
+            >
+                Continue Payment
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="home-link">
+        <a href="home.html">← Back To Home</a>
+    </div>
+
+</div>
+
+<script>
+
+let currentStudent=null;
+
+function fetchStudentDetails(){
+
+    const studentId=
+    document.getElementById('studentId')
+    .value
+    .trim();
+
+    const students=
+    JSON.parse(
+        localStorage.getItem('registered_students')
+    ) || [];
+
+    const student=
+    students.find(
+        s=>
+        s.id.toLowerCase()===
+        studentId.toLowerCase()
+    );
+
+    if(!student){
+
+        alert("Student Not Found");
+        return;
+    }
+
+    currentStudent=student;
+
+    const totalFees=
+    parseFloat(student.totalFees)||50000;
+
+    const paidFees=
+    parseFloat(student.feesPaid)||0;
+
+    const remainingFees=
+    totalFees-paidFees;
+
+    document.getElementById('sName')
+    .innerText=student.name;
+
+    document.getElementById('sDomain')
+    .innerText=student.domain;
+
+    document.getElementById('sTotal')
+    .innerText=totalFees;
+
+    document.getElementById('sPaid')
+    .innerText=paidFees;
+
+    document.getElementById('sRemain')
+    .innerText=remainingFees;
+
+    document.getElementById('studentDetails')
+    .style.display='block';
+}
+
+function togglePartialBox(){
+
+    const type=
+    document.getElementById('paymentType').value;
+
+    document.getElementById('partialBox')
+    .style.display=
+    type==='PARTIAL'
+    ?'block'
+    :'none';
+}
+
+function continuePayment(){
+
+    if(!currentStudent){
+
+        alert("Fetch Student First");
+        return;
+    }
+
+    const totalFees=
+    parseFloat(currentStudent.totalFees);
+
+    const paidFees=
+    parseFloat(currentStudent.feesPaid)||0;
+
+    const remainingFees=
+    totalFees-paidFees;
+
+    let amountToPay=remainingFees;
+
+    const paymentType=
+    document.getElementById('paymentType').value;
+
+    if(paymentType==='PARTIAL'){
+
+        amountToPay=
+        parseFloat(
+            document.getElementById('partialAmount').value
+        );
+
+        if(
+            isNaN(amountToPay) ||
+            amountToPay<=0 ||
+            amountToPay>remainingFees
+        ){
+
+            alert("Invalid Partial Amount");
+            return;
+        }
+    }
+
+    processRazorpayPayment(
+        amountToPay,
+        {
+            student_id:currentStudent.id,
+            payment_type:paymentType,
+            name:currentStudent.name,
+            email:currentStudent.email,
+            contact:currentStudent.mobile
+        }
+    );
+}
+
+async function processRazorpayPayment(
+    amountInINR,
+    studentDetails = {}
+) {
+
+    try {
+
+        if (!amountInINR || amountInINR < 1) {
+
+            alert("Payment amount must be at least ₹1");
+            return;
+        }
+
+        const targetAmountPaise =
+        Math.round(amountInINR * 100);
+
+        const response =
+        await fetch(
+            'http://localhost:3000/api/create-order',
+            {
+                method:'POST',
+
+                headers:{
+                    'Content-Type':'application/json'
+                },
+
+                body:JSON.stringify({
+
+                    amount:targetAmountPaise,
+
+                    currency:'INR',
+
+                    receipt:'receipt_'+Date.now()
+                })
+            }
+        );
+
+        if(!response.ok){
+
+            alert("Unable To Create Order");
+            return;
+        }
+
+        const orderData =
+        await response.json();
+
+        const options = {
+
+            key:"rzp_test_SpphA7vU94jKsy",
+
+            amount:orderData.amount,
+
+            currency:orderData.currency,
+
+            name:"Pinnacle Scholars Academy",
+
+            description:"Student Fee Payment",
+
+            order_id:orderData.order_id,
+
+            handler:async function(paymentReceipt){
+
+                try{
+
+                    // LOCAL STORAGE UPDATE
+
+                    const students =
+                    JSON.parse(
+                        localStorage.getItem(
+                            'registered_students'
+                        )
+                    ) || [];
+
+                    const studentIndex =
+                    students.findIndex(
+                        s =>
+                        s.id ===
+                        studentDetails.student_id
+                    );
+
+                    if(studentIndex !== -1){
+
+                        students[studentIndex].feesPaid =
+                        (
+                            parseFloat(
+                                students[studentIndex].feesPaid
+                            ) || 0
+                        )
+                        +
+                        parseFloat(amountInINR);
+
+                        students[studentIndex].remainingFees =
+                        (
+                            parseFloat(
+                                students[studentIndex].totalFees
+                            )
+                        )
+                        -
+                        (
+                            parseFloat(
+                                students[studentIndex].feesPaid
+                            )
+                        );
+
+                        localStorage.setItem(
+                            'registered_students',
+                            JSON.stringify(students)
+                        );
+                    }
+
+                    alert(
+
+`Payment Successful!
+
+Payment ID:
+${paymentReceipt.razorpay_payment_id}
+
+Remaining Fees:
+₹${students[studentIndex].remainingFees}`
+                    );
+
+                    location.reload();
+
+                }catch(err){
+
+                    console.log(err);
+
+                    alert(
+                        "Payment Success But Storage Update Failed"
+                    );
+                }
+            },
+
+            prefill:{
+
+                name:
+                studentDetails.name || "Student",
+
+                email:
+                studentDetails.email ||
+                "student@example.com",
+
+                contact:
+                studentDetails.contact ||
+                "9999999999"
+            },
+
+            theme:{
+                color:"#0ea5e9"
+            }
+        };
+
+        const razorpayWindow =
+        new Razorpay(options);
+
+        razorpayWindow.on(
+            'payment.failed',
+
+            function(response){
+
+                alert(
+                    "Payment Failed\n\n"+
+                    response.error.description
+                );
+            }
+        );
+
+        razorpayWindow.open();
+
+    } catch(error){
+
+        console.log(error);
+
+        alert(
+            "Payment Initialization Failed"
+        );
+    }
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinnacle Scholars Academy | Noida</title>
+    
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        :root{
+            --primary:#071427;
+            --secondary:#2563eb;
+            --accent:#f59e0b;
+            --light:#f8fafc;
+            --dark:#0f172a;
+            --grad-start:#020617;
+            --grad-end:#111827;
+            --text-main:#f8fafc;
+            --card-bg:rgba(15,23,42,0.72);
+            --glass:rgba(255,255,255,0.08);
+            --border:rgba(255,255,255,0.12);
+            --shadow:0 10px 35px rgba(0,0,0,.35);
+            --watermark-color:rgba(255,255,255,.03);
+        }
+        
+        [data-theme="light"]{
+            --grad-start:#eef2ff;
+            --grad-end:#f8fafc;
+            --text-main:#0f172a;
+            --card-bg:rgba(255,255,255,0.88);
+            --glass:rgba(255,255,255,0.6);
+            --border:rgba(15,23,42,0.08);
+            --watermark-color:rgba(15,23,42,.04);
+        }
+        
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            scroll-behavior:smooth;
+        }
+        
+        body{
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            color:var(--text-main);
+            background:radial-gradient(circle at top left,#1e3a8a 0%,transparent 28%),radial-gradient(circle at bottom right,#7c3aed 0%,transparent 24%),linear-gradient(135deg,var(--grad-start),var(--grad-end));
+            background-attachment:fixed;
+            overflow-x:hidden;
+            position:relative;
+            line-height:1.7;
+        }
+        
+        /* FIX: Isolated Watermark with 100% transparent click-through protection */
+        body::before{
+            content:"PINNACLE ACADEMY";
+            position:fixed;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%) rotate(-30deg);
+            font-size:7rem;
+            font-weight:900;
+            color:var(--watermark-color);
+            z-index:-2;
+            letter-spacing:12px;
+            white-space:nowrap;
+            pointer-events:none !important;
+        }
+        
+        /* FIX: Isolated Grid Overlay with click-through protection */
+        body::after{
+            content:"";
+            position:fixed;
+            inset:0;
+            background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+            background-size:40px 40px;
+            z-index:-3;
+            pointer-events:none !important;
+        }
+        
+        header{
+            position:sticky;
+            top:0;
+            z-index:1000;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:1rem 5%;
+            background:rgba(2,6,23,.75);
+            backdrop-filter:blur(18px);
+            border-bottom:1px solid rgba(255,255,255,.08);
+            box-shadow:0 8px 25px rgba(0,0,0,.25);
+        }
+        
+        .nav-links{
+            display:flex;
+            align-items:center;
+            gap:18px;
+            flex-wrap:wrap;
+        }
+        
+        .nav-links a{
+            color:#fff;
+            text-decoration:none;
+            font-size:.95rem;
+            font-weight:600;
+            position:relative;
+            transition:.35s ease;
+            padding-bottom:4px;
+        }
+        
+        .nav-links a::after{
+            content:"";
+            position:absolute;
+            left:0;
+            bottom:0;
+            width:0;
+            height:2px;
+            background:linear-gradient(90deg,var(--accent),#fff);
+            transition:.35s ease;
+        }
+        
+        .nav-links a:hover{
+            color:#facc15;
+            transform:translateY(-2px);
+        }
+        
+        .nav-links a:hover::after{
+            width:100%;
+        }
+        
+        .theme-toggle-btn{
+            background:linear-gradient(135deg,var(--accent),#f97316);
+            border:none;
+            color:#fff;
+            padding:10px 18px;
+            border-radius:50px;
+            font-weight:700;
+            cursor:pointer;
+            box-shadow:0 10px 25px rgba(245,158,11,.35);
+            transition:.4s ease;
+        }
+        
+        .theme-toggle-btn:hover{
+            transform:translateY(-3px) scale(1.03);
+            box-shadow:0 18px 35px rgba(245,158,11,.45);
+        }
+        
+        .brand-header-wrapper{
+            position:relative;
+            padding:14px 24px;
+            border-radius:20px;
+            background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+            border:1px solid rgba(255,255,255,.08);
+            overflow:hidden;
+            box-shadow:0 12px 35px rgba(0,0,0,.28);
+        }
+        
+        .brand-header-wrapper::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:linear-gradient(135deg,transparent,rgba(255,255,255,.08),transparent);
+            transform:translateX(-100%);
+            animation:shine 6s linear infinite;
+        }
+        
+        @keyframes shine{
+            100%{transform:translateX(100%)}
+        }
+        
+        .falling-star{
+            position:absolute;
+            top:-10px;
+            width:2px;
+            height:14px;
+            border-radius:50%;
+            background:linear-gradient(to bottom,transparent,var(--accent));
+            opacity:0;
+            pointer-events:none;
+            animation:starDropFall linear infinite;
+        }
+        
+        .star-1{left:15%;animation-duration:2.5s}
+        .star-2{left:45%;animation-duration:3.1s;animation-delay:.6s;background:#38bdf8}
+        .star-3{left:72%;animation-duration:2.8s;animation-delay:1.2s}
+        .star-4{left:88%;animation-duration:3.5s;animation-delay:.3s;background:#fde047}
+        
+        @keyframes starDropFall{
+            0%{transform:translateY(0) rotate(20deg);opacity:0}
+            20%{opacity:1}
+            100%{transform:translate(-18px,90px) rotate(20deg);opacity:0}
+        }
+        
+        .notice-ticker-container{
+            height:46px;
+            background:rgba(255,255,255,.06);
+            backdrop-filter:blur(10px);
+            border-top:1px solid rgba(255,255,255,.08);
+            border-bottom:1px solid rgba(255,255,255,.08);
+            display:flex;
+            align-items:center;
+            overflow:hidden;
+        }
+        
+        .notice-ticker-title{
+            min-width:190px;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:0 24px;
+            background:linear-gradient(135deg,#ef4444,#dc2626);
+            font-weight:900;
+            font-size:1rem;
+            letter-spacing:1.5px;
+            color:#ffffff;
+            text-transform:uppercase;
+            white-space:nowrap;
+            text-shadow:0 2px 12px rgba(0,0,0,.6);
+            position:relative;
+            z-index:5;
+            box-shadow:4px 0 20px rgba(0,0,0,.25);
+        }
+        
+        .notice-ticker-track{
+            display:flex;
+            white-space:nowrap;
+            padding-left:100%;
+            animation:marqueeLinearLoop 28s linear infinite;
+        }
+        
+        .notice-ticker-track:hover{
+            animation-play-state:paused;
+        }
+        
+        .ticker-item{
+            padding-right:60px;
+            color:#e2e8f0;
+            font-weight:500;
+        }
+        
+        .ticker-link{
+            text-decoration:none;
+            color:#facc15;
+            border-bottom:1px dashed #facc15;
+            font-weight:700;
+            transition:.3s ease;
+        }
+        
+        .ticker-link:hover{
+            color:#fff;
+            border-bottom-style:solid;
+        }
+        
+        @keyframes marqueeLinearLoop{
+            0%{transform:translate3d(0,0,0)}
+            100%{transform:translate3d(-100%,0,0)}
+        }
+        
+        /* FIX: Added relative positioning and high z-index to explicitly lift interactive workspace above all else */
+        .hero{
+            position:relative;
+            z-index:10;
+            min-height:88vh;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            text-align:center;
+            padding:0 20px;
+            background:linear-gradient(rgba(2,6,23,.78),rgba(2,6,23,.82)),url('https://images.unsplash.com/photo-1523050335392-9ae86774929f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size:cover;
+            background-position:center;
+            overflow:hidden;
+        }
+        
+        .hero::before{
+            content:"";
+            position:absolute;
+            width:600px;
+            height:600px;
+            border-radius:50%;
+            background:radial-gradient(circle,rgba(59,130,246,.18),transparent 70%);
+            top:-180px;
+            right:-150px;
+            animation:pulseGlow 7s ease-in-out infinite;
+            pointer-events:none;
+        }
+        
+        .hero::after{
+            content:"";
+            position:absolute;
+            width:500px;
+            height:500px;
+            border-radius:50%;
+            background:radial-gradient(circle,rgba(168,85,247,.14),transparent 70%);
+            bottom:-200px;
+            left:-160px;
+            animation:pulseGlow 8s ease-in-out infinite alternate;
+            pointer-events:none;
+        }
+        
+        @keyframes pulseGlow{
+            50%{transform:scale(1.08)}
+        }
+        
+        .hero h1{
+            font-size:4rem;
+            font-weight:900;
+            line-height:1.15;
+            margin-bottom:20px;
+            text-shadow:0 8px 35px rgba(0,0,0,.45);
+            max-width:900px;
+        }
+        
+        .hero p{
+            font-size:1.2rem;
+            max-width:760px;
+            color:#e2e8f0;
+            margin-bottom:28px;
+        }
+        
+        /* FIX: Enforced continuous interactive capability across the action block */
+        .hero-btns{
+            position:relative;
+            z-index:50;
+            display:flex;
+            gap:18px;
+            flex-wrap:wrap;
+            justify-content:center;
+        }
+        
+        /* FIX: Converted button components to display inline-flex elements to fully adapt href mapping mechanics */
+        .cta-btn, .portal-btn{
+            position:relative;
+            z-index:60;
+            overflow:hidden;
+            text-decoration:none;
+            cursor:pointer;
+            padding:14px 32px;
+            border-radius:16px;
+            color:#fff;
+            font-size:1rem;
+            font-weight:700;
+            transition:.45s ease;
+            box-shadow:0 14px 30px rgba(0,0,0,.28);
+            background:linear-gradient(135deg,#cd60c2,#c560bc);
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+        }
+        
+        .cta-btn::before, .portal-btn::before{
+            content:"";
+            position:absolute;
+            top:0;
+            left:-120%;
+            width:100%;
+            height:100%;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+            transition:.6s ease;
+        }
+        
+        .cta-btn:hover::before, .portal-btn:hover::before{
+            left:120%;
+        }
+        
+        .cta-btn:hover, .portal-btn:hover{
+            transform:translateY(-5px) scale(1.03);
+        }
+        
+        .hero-brochure-orb{
+            position:absolute;
+            right:4%;
+            top:50%;
+            transform:translateY(-50%);
+            width:180px;
+            height:180px;
+            border-radius:50%;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            cursor:pointer;
+            z-index:50;
+            animation:floatOrb 4s ease-in-out infinite;
+        }
+        
+        .hero-brochure-orb::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            border-radius:50%;
+            background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.7),transparent,var(--accent),transparent);
+            animation:rotateOrb 6s linear infinite;
+        }
+        
+        .hero-brochure-core{
+            position:relative;
+            width:142px;
+            height:142px;
+            border-radius:50%;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            text-align:center;
+            background:rgba(15,23,42,.78);
+            backdrop-filter:blur(14px);
+            border:1px solid rgba(255,255,255,.12);
+            box-shadow:0 20px 45px rgba(0,0,0,.45),inset 0 0 20px rgba(255,255,255,.08);
+            transition:.4s ease;
+        }
+        
+        .hero-brochure-orb:hover .hero-brochure-core{
+            transform:scale(1.08);
+            background:rgba(30,41,59,.92);
+        }
+        
+        .hero-brochure-core .icon{font-size:2.2rem;margin-bottom:8px;}
+        .hero-brochure-core .title{font-size:.78rem;font-weight:800;line-height:1.4;letter-spacing:1px;color:#fff;}
+        
+        @keyframes rotateOrb{100%{transform:rotate(360deg)}}
+        @keyframes floatOrb{
+            0%,100%{transform:translateY(-50%) translateY(0)}
+            50%{transform:translateY(-50%) translateY(-14px)}
+        }
+        
+        section{padding:90px 8%;position:relative; z-index: 10;}
+        section h2{
+            font-size:2.4rem;
+            font-weight:900;
+            display:inline-block;
+            margin-bottom:18px;
+            position:relative;
+            background:linear-gradient(135deg,#fff,var(--accent));
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+        
+        [data-theme="light"] section h2{-webkit-text-fill-color:initial;color:#0f172a;background:none}
+        section h2::after{
+            content:"";
+            position:absolute;
+            left:0;
+            bottom:-8px;
+            width:65%;
+            height:4px;
+            border-radius:20px;
+            background:linear-gradient(90deg,var(--accent),transparent);
+        }
+        
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px;margin-top:35px}
+        
+        .card{
+            position:relative;
+            padding:32px;
+            border-radius:28px;
+            background:var(--card-bg);
+            border:1px solid var(--border);
+            backdrop-filter:blur(16px);
+            overflow:hidden;
+            transition:.45s ease;
+            box-shadow:var(--shadow);
+        }
+        
+        .card::before{content:"";position:absolute;top:0;left:0;width:100%;height:5px;background:linear-gradient(90deg,var(--accent),#38bdf8,#8b5cf6)}
+        .card::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);opacity:0;transition:.4s ease}
+        .card:hover{transform:translateY(-12px) rotateX(2deg) scale(1.01);box-shadow:0 25px 60px rgba(0,0,0,.38)}
+        .card:hover::after{opacity:1}
+        .card h3{font-size:1.35rem;margin-bottom:12px;color:#fff}
+        .card p,.card li{color:#dbeafe}
+        [data-theme="light"] .card h3,[data-theme="light"] .card p,[data-theme="light"] .card li{color:#0f172a}
+        ul{padding-left:18px}
+        li{margin-bottom:10px}
+        #overview{text-align:center;padding-bottom:40px}
+        #overview p{max-width:980px;margin:auto}
+        .portal-links{text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+        footer{text-align:center;padding:30px 20px;background:rgba(2,6,23,.82);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.08);font-size:.95rem;color:#cbd5e1}
+        
+        .nav-scroll-btn{
+            position:fixed;
+            bottom:28px;
+            right:28px;
+            width:58px;
+            height:58px;
+            border-radius:50%;
+            border:1px solid rgba(255,255,255,.15);
+            background:linear-gradient(135deg,var(--accent),#f97316);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            cursor:pointer;
+            z-index:1001;
+            box-shadow:0 18px 40px rgba(0,0,0,.35);
+            transition:.4s ease;
+        }
+        
+        .nav-scroll-btn:hover{transform:translateY(-6px) scale(1.08);box-shadow:0 25px 45px rgba(0,0,0,.45)}
+        .nav-scroll-btn svg{width:26px;height:26px;fill:#fff;transition:.4s ease}
+        .nav-scroll-btn.pointing-down svg{transform:rotate(180deg)}
+        
+        /* --- NEW: Moving Blocks Background for Portals Section --- */
+
+/* Ensure the portals section acts as the relative canvas for the blocks */
+.portal-links {
+    position: relative;
+    overflow: hidden; /* Prevents blocks from leaking outside the section */
+}
+
+/* Layer the actual content safely above the moving shapes */
+.portal-content {
+    position: relative;
+    z-index: 5;
+}
+
+/* Base setup for the background blocks container */
+.portal-bg-blocks {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none; /* CRITICAL: Allows clicks to pass right through to buttons */
+}
+
+/* Universal styles for the moving geometric shapes */
+.p-block {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(4px);
+    border-radius: 24px;
+    animation: floatBlocks 20s infinite linear;
+}
+
+/* Light mode adjustments so blocks remain ultra-subtle */
+[data-theme="light"] .p-block {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.01));
+    border: 1px solid rgba(15, 23, 42, 0.03);
+}
+
+/* Individual Block Configs: Sizing, Starting Positions, and Speed variations */
+.block-1 {
+    width: 120px;
+    height: 120px;
+    top: 10%;
+    left: 10%;
+    animation-duration: 25s;
+}
+
+.block-2 {
+    width: 180px;
+    height: 180px;
+    bottom: -20px;
+    right: 15%;
+    animation-duration: 35s;
+    animation-direction: reverse;
+    border-radius: 40px;
+}
+
+.block-3 {
+    width: 90px;
+    height: 90px;
+    top: 40%;
+    right: 25%;
+    animation-duration: 18s;
+}
+
+/* Smooth drifting and rotating animation loop */
+@keyframes floatBlocks {
+    0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+    }
+    33% {
+        transform: translateY(-20px) translateX(15px) rotate(120deg);
+    }
+    66% {
+        transform: translateY(15px) translateX(-20px) rotate(240deg);
+    }
+    100% {
+        transform: translateY(0) translateX(0) rotate(360deg);
+    }
+}
+
+        /* =========================
+   RESPONSIVE OPTIMIZATION
+   ========================= */
+
+@media(max-width:1100px){
+
+    .hero h1{
+        font-size:3.2rem;
+    }
+
+    .hero-brochure-orb{
+        width:140px;
+        height:140px;
+        right:3%;
+    }
+
+    .hero-brochure-core{
+        width:110px;
+        height:110px;
+    }
+
+    .grid{
+        grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    }
+}
+
+/* TABLETS */
+@media(max-width:900px){
+
+    header{
+        flex-direction:column;
+        gap:16px;
+        padding:1rem;
+    }
+
+    .nav-links{
+        justify-content:center;
+        gap:14px;
+    }
+
+    .hero{
+        min-height:100vh;
+        padding:120px 20px 70px;
+    }
+
+    .hero h1{
+        font-size:2.7rem;
+        line-height:1.2;
+    }
+
+    .hero p{
+        font-size:1.05rem;
+        max-width:95%;
+    }
+
+    .hero-btns{
+        gap:14px;
+    }
+
+    .cta-btn,
+    .portal-btn{
+        padding:13px 24px;
+        font-size:.95rem;
+    }
+
+    .hero-brochure-orb{
+        position:relative;
+        top:auto;
+        right:auto;
+        transform:none;
+        margin-bottom:35px;
+        animation:floatTablet 4s ease-in-out infinite;
+    }
+
+    @keyframes floatTablet{
+        0%,100%{transform:translateY(0)}
+        50%{transform:translateY(-10px)}
+    }
+
+    section{
+        padding:75px 6%;
+    }
+
+    .notice-ticker-title{
+        min-width:150px;
+        font-size:.85rem;
+        padding:0 16px;
+    }
+
+    .ticker-item{
+        font-size:.9rem;
+    }
+}
+
+/* MOBILE */
+@media(max-width:600px){
+
+    body::before{
+        font-size:3rem;
+        letter-spacing:5px;
+    }
+
+    header{
+        padding:.9rem .8rem;
+    }
+
+    .brand-header-wrapper{
+        width:100%;
+        text-align:center;
+        padding:14px 12px;
+    }
+
+    .brand-header-wrapper h1{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+    }
+
+    .brand-header-wrapper span:first-child{
+        font-size:24px !important;
+    }
+
+    .brand-header-wrapper span:last-child{
+        font-size:11px !important;
+        letter-spacing:3px !important;
+        margin-top:5px;
+    }
+
+    .nav-links{
+        width:100%;
+        gap:10px;
+        justify-content:center;
+    }
+
+    .nav-links a{
+        font-size:.82rem;
+    }
+
+    .theme-toggle-btn{
+        width:100%;
+        max-width:240px;
+    }
+
+    .notice-ticker-container{
+        height:42px;
+    }
+
+    .notice-ticker-title{
+        min-width:115px;
+        font-size:.72rem;
+        padding:0 10px;
+    }
+
+    .ticker-item{
+        font-size:.78rem;
+        padding-right:35px;
+    }
+
+    .hero{
+        padding:120px 16px 60px;
+    }
+
+    .hero h1{
+        font-size:2rem;
+        line-height:1.25;
+    }
+
+    .hero p{
+        font-size:.95rem;
+        line-height:1.7;
+    }
+
+    .hero-btns{
+        width:100%;
+        flex-direction:column;
+        align-items:center;
+    }
+
+    .cta-btn,
+    .portal-btn{
+        width:100%;
+        max-width:320px;
+        justify-content:center;
+        padding:14px 20px;
+        font-size:.92rem;
+    }
+
+    .hero-brochure-orb{
+        width:120px;
+        height:120px;
+        margin-bottom:28px;
+    }
+
+    .hero-brochure-core{
+        width:92px;
+        height:92px;
+    }
+
+    .hero-brochure-core .icon{
+        font-size:1.6rem;
+    }
+
+    .hero-brochure-core .title{
+        font-size:.62rem;
+    }
+
+    section{
+        padding:65px 5%;
+    }
+
+    section h2{
+        font-size:1.8rem;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+        gap:20px;
+    }
+
+    .card{
+        padding:24px 20px;
+        border-radius:22px;
+    }
+
+    .card h3{
+        font-size:1.15rem;
+    }
+
+    .portal-links{
+        padding-bottom:70px;
+    }
+
+    .nav-scroll-btn{
+        width:50px;
+        height:50px;
+        right:18px;
+        bottom:18px;
+    }
+
+    .nav-scroll-btn svg{
+        width:22px;
+        height:22px;
+    }
+
+    footer{
+        font-size:.82rem;
+        padding:24px 15px;
+    }
+}
+
+/* EXTRA SMALL DEVICES */
+@media(max-width:380px){
+
+    .hero h1{
+        font-size:1.7rem;
+    }
+
+    .hero p{
+        font-size:.88rem;
+    }
+
+    .cta-btn,
+    .portal-btn{
+        font-size:.85rem;
+        padding:12px 16px;
+    }
+
+    section h2{
+        font-size:1.55rem;
+    }
+
+    .card{
+        padding:20px 16px;
+    }
+
+    .notice-ticker-title{
+        display:none;
+    }
+}
+    </style>
+</head>
+<body>
+
+<!-- Floating Dual-Direction Circular Navigation Toggle -->
+<button class="nav-scroll-btn pointing-down" id="globalScrollBtn" onclick="handleNavigation()" title="Navigate Page">
+    <svg viewBox="0 0 24 24">
+        <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+    </svg>
+</button>
+
+<header>
+    <!-- UNIQUE BRAND HEADER CONTAINER WITH FALLING STAR ENGINE EFFECT -->
+<div class="brand-header-wrapper">
+    <!-- CSS Passive Star Nodes -->
+    <div class="falling-star star-1"></div>
+    <div class="falling-star star-2"></div>
+    <div class="falling-star star-3"></div>
+    <div class="falling-star star-4"></div>
+
+    <!-- MAIN BRAND HEADING -->
+    <h1 style="margin: 0; line-height: 1.15; text-transform: uppercase; pointer-events: auto;">
+        <!-- PINNACLE: Set in Cinzel font for deep institutional authority -->
+        <span style="font-family: 'Cinzel', serif; font-weight: 900; font-size: 32px; background: linear-gradient(135deg, #f403e8 20%, #ff00e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px;">PINNACLE</span>
+        <!-- SCHOLARS ACADEMY: Set in modern ultra-crisp Inter for stark stylistic contrast -->
+        <span style="font-family: 'Inter', sans-serif; font-weight: 300; font-size: 15px; color: #ed8936; letter-spacing: 6.5px; display: inline-block; margin-top: 2px; padding-left: 4px;">
+            SCHOLARS <span style="font-weight: 800; color: #0cf827; letter-spacing: 4px;">ACADEMY</span>
+        </span>
+    </h1>
+</div>    
+
+<nav class="nav-links">
+        <a href="#syllabus">Syllabus</a>
+        <a href="#faculty-directory-section">Faculty Directory</a>
+        <a href="#fees">Fees</a>
+        <a href="#portals">Portals</a>
+        <a href="enrollment.html">Enroll</a>
+        <a href="#take-test">Take Test</a>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn">☀️ Light Mode</button>
+</nav>
+</header>
+
+<!-- LIVE MOVING NOTICE SECTION -->
+<div class="notice-ticker-container">
+    <div class="notice-ticker-title">📢 LATEST UPDATES</div>
+    <div class="notice-ticker-track">
+        
+        <span class="ticker-item">
+            🚀 <strong>PLACEMENT DRIVE :</strong> Tech Solutions registration ends soon. 
+            <a href="https://github.com" target="_blank" class="ticker-link">Apply via Matrix Portal →</a>
+        </span>
+        
+        <span class="ticker-item">
+            &#128220; <strong>ACADEMIC PROSPECTUS :</strong> Academic Prospectus has been officially finalized. 
+            <a onclick="downloadBrochure()" target="_blank" class="ticker-link">Download PDF & also can Pay the Fee →</a>
+        </span>
+
+        <span class="ticker-item">
+            &#128214;  <strong>ACADEMIC ENROLLMENT :</strong> Academic Enrollment Ends soon. 
+            <a href="enrollment.html" target="_blank" class="ticker-link">Enroll via portal →</a>
+        </span>
+        
+        <span class="ticker-item">
+            💳 <strong>FEE REMINDER:</strong> Complete pending tuition balances to maintain live class links. 
+            <a href="fees-payment.html" target="_blank" class="ticker-link">Pay Fast via Razorpay →</a>
+        </span>
+        
+        <span class="ticker-item">
+            🎓 <strong>RESULTS :</strong> Students can check their Monthly test results at anytime. 
+            <a href="#" onclick="navigateTo('results')" class="ticker-link">Check Result →</a>
+        </span>
+
+        <span class="ticker-item">
+            &#128221; <strong>TEST ELIGIBILITY:</strong> Students can take their Monthly Tests after <b>2 months</b> only. 
+            <a href="#take-test" target="_blank" class="ticker-link">Take Test →</a>
+        </span>
+    </div>
+</div>
+
+<section class="hero" id="brouchure-section">
+    <!-- Professional Floating Hero Orb -->
+<div class="hero-brochure-orb"
+     data-aos="zoom-in-left"
+     data-aos-delay="700"
+     onclick="downloadBrochure()"
+     title="Download Academic Prospectus">
+
+    <div class="hero-brochure-core">
+        <div class="icon">🎓</div>
+        <div class="title">
+            DOWNLOAD<br>
+            PROSPECTUS<br>
+            2026
+        </div>
+    </div>
+
+</div>
+    <h1 data-aos="fade-down" data-aos-duration="1000">Master Your Future in Noida</h1>
+    <p data-aos="fade-up" data-aos-delay="300">Premium Coaching for Intermediate Excellence & M.Tech Specialization</p>
+    <div class="hero-btns" data-aos="zoom-in" data-aos-delay="600">
+        <button onclick="navigateTo('student')" class="cta-btn">Student Portal</button>
+        <button onclick="navigateTo('faculty')" class="cta-btn" style="background: var(--secondary);">Faculty Portal</button>
+        <button onclick="location.href='#faculty-directory-section'" class="cta-btn" style="background: #805ad5;">Faculty Directory</button>
+        <button onclick="window.location.href='fees-payment.html'" class="cta-btn" style="background: #38a169;">Pay Fees</button>
+    </div>
+</section>
+
+<section id="overview" style="text-align: center; padding-bottom: 30px;">
+    <div data-aos="fade-up" style="max-width: 800px; margin: 0 auto;">
+        <h2>Why Pinnacle Scholars Academy?</h2>
+        <p style="font-size: 1.2rem; color: var(--secondary); font-weight: 600; margin-top: 15px;">Noida's Premier Hub for Academic Breakthroughs and Competitive Mastery.</p>
+        <p style="font-size: 1.05rem; margin-bottom: 40px;">
+            At Pinnacle Scholars Academy, we don't just teach—we build paths to premier institutions. By combining rigorous conceptual frameworks with real-time analytics, competitive testing systems, and elite mentorship from top-tier academic experts, we bridge the gap between high potential and legendary results. Whether you are cracking national-level engineering ranks or pioneering advanced M.Tech specializations, your peak performance begins here.
+        </p>
+    </div>
+    <div class="grid">
+        <div class="card" data-aos="fade-up" data-aos-delay="100">
+            <h3 style="color: var(--accent); margin-bottom: 10px;">✨ 94% Success Rate</h3>
+            <p style="margin: 0; font-size: 0.95rem;">A legacy of top-tier results in both Board examinations and national engineering entrance brackets year over year.</p>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="200">
+            <h3 style="color: var(--accent); margin-bottom: 10px;">🧠 Elite Faculty Team</h3>
+            <p style="margin: 0; font-size: 0.95rem;">Learn directly from PhD researchers, domain specialists, and IIT alumni dedicated to simplified complex learning.</p>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="300">
+            <h3 style="color: var(--accent); margin-bottom: 10px;">📊 Smart Test Analytics</h3>
+            <p style="margin: 0; font-size: 0.95rem;">Identify clear subject weaknesses instantly using automated weekly CBT exam portals and custom metrics trackers.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Self-Rotating Compact Brochure Token Shape Placement Component -->
+
+
+<!-- Faculty Directory Section -->
+<section id="faculty-directory-section">
+    <h2 data-aos="fade-right">Faculty Directory</h2>
+    <p>View profiling registry, core accomplishments, and accurate dynamic tenure tracking metadata values directly from verified system files.</p>
+    <div class="grid" id="facultyDirectoryGrid">
+        <!-- Built-in legacy fallback elements -->
+        <div class="card" data-aos="zoom-in-up">
+            <h3 style="color: var(--accent); margin-bottom:5px;">Dr. Amit Sharma</h3>
+            <p style="margin:0;"><strong>Domain:</strong> Quantum Physics</p>
+            <p style="margin:0;"><strong>Qualifications:</strong> PhD in Quantum Physics</p>
+            <p style="margin:0;"><strong>Tenure Length:</strong> 15 Years Exp.</p>
+        </div>
+        <div class="card" data-aos="zoom-in-up" data-aos-delay="200">
+            <h3 style="color: var(--accent); margin-bottom:5px;">Prof. S. Verma</h3>
+            <p style="margin:0;"><strong>Domain:</strong> Structural Analysis</p>
+            <p style="margin:0;"><strong>Qualifications:</strong> M.Tech IIT-D</p>
+            <p style="margin:0;"><strong>Tenure Length:</strong> Core Specialist</p>
+        </div>
+    </div>
+</section>
+
+<section id="take-test">
+    <h2 data-aos="fade-right">Examination Center</h2>
+    <p data-aos="fade-right">Select your domain to begin your Monthly assessment or practice test.</p>
+    <div class="grid">
+        <div class="card" data-aos="flip-left" data-aos-delay="100">
+            <h3>JEE Format (Intermediate)</h3>
+            <p>Mathematics, Physics, & Chemistry. Multiple Choice & Numerical types.</p><br>
+            <button class="portal-btn" style="background: var(--accent);" onclick="startTest('jee')">Start Monthly JEE Test</button>
+        </div>
+        <div class="card" data-aos="flip-left" data-aos-delay="300">
+            <h3>GATE Format (M.Tech)</h3>
+            <p>Technical Core & General Aptitude. High-level problem solving.</p><br>
+            <button class="portal-btn" style="background: var(--accent);" onclick="startTest('gate')">Start Monthly GATE Test</button>
+        </div>
+    </div>
+</section>
+
+<section id="syllabus">
+    <h2 data-aos="fade-right">Course Syllabus</h2>
+    <div class="grid">
+        <div class="card" data-aos="fade-up">
+            <h3>Intermediate (Inter)</h3>
+            <ul>
+                <li>MPC / BiPC Core Modules</li>
+                <li>JEE & NEET Integrated Prep</li>
+                <li>Board Exam Mastery (Class 11 & 12)</li>
+            </ul>
+           <div style="
+    font-size: 0.88rem;
+    color: #718096;
+    background: #fffaf0;
+    border-left: 3px solid #f59e0b;
+    padding: 10px 12px;
+    margin-top: 15px;
+    border-radius: 6px;
+    line-height: 1.6;
+    position: relative;
+    z-index: 999;
+">
+    <strong>⚠️ Notice:</strong>
+    Please download the latest syllabus from the official
+
+    <button
+        onclick="window.open('https://www.nta.ac.in/', '_blank')"
+        style="
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            color: #2563eb;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: inherit;
+        "
+    >
+        NTA Official Website
+    </button>
+</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="200">
+            <h3>M.Tech Specialized</h3>
+            <ul>
+                <li>Advanced Research Methodologies</li>
+                <li>GATE Technical Subject Depth</li>
+                <li>Industry Project Mentorship</li>
+            </ul>
+            <p style="font-size: 0.88rem; color: #718096; background: #fffaf0; border-left: 3px solid var(--accent); padding: 8px 12px; margin-top: 15px; border-radius: 4px;">
+                <strong>⚠️ Notice:</strong> Please download the latest syllabus from the official <strong>GATE organizing IIT website</strong>, as the organizing institute or topic weights may change.
+            </p>
+        </div>
+        
+    </div>
+</section>
+
+<section id="fees">
+    <h2 data-aos="zoom-in">Fee Structure & Norms</h2>
+    <div class="grid">
+        <div class="card" data-aos="fade-right">
+            <h3>Fee Policy</h3>
+            <p>Transparent pricing with monthly installment options. Merit-based scholarships available for top 10% performers.</p>
+            <button onclick="window.location.href='fees-payment.html'" class="portal-btn" style="background: #38a169; margin-top: 15px;">Quick Fee Payment Gateway</button>
+        </div>
+        <div class="card" data-aos="fade-left">
+            <h3>Institute Norms</h3>
+            <p>95% attendance requirement, strictly enforced academic integrity, and professional conduct code for all students.</p>
+        </div>
+    </div>
+</section>
+
+<section id="schedule">
+    <h2 data-aos="fade-up">Timings & Scheduling</h2>
+    <div class="grid">
+        <div class="card" data-aos="fade-right">
+            <h3>Class Timings</h3>
+            <p>Morning: 8:00 AM - 1:00 PM<br>Evening: 4:00 PM - 8:00 PM</p>
+        </div>
+        <div class="card" data-aos="fade-left">
+            <h3>Results Portal</h3>
+            <p>Track Monthly mock tests and semester analytics in real-time through our secure portal.</p>
+        </div>
+    </div>
+</section>
+
+<section id="portals" class="portal-links" data-aos="zoom-out">
+    <div class="portal-bg-blocks">
+        <div class="p-block block-1"></div>
+        <div class="p-block block-2"></div>
+        <div class="p-block block-3"></div>
+    </div>
+
+    <h2>Access Portals</h2>
+    <p>Login to manage your academic journey.</p><br>
+    <button class="portal-btn" onclick="navigateTo('student')">Student Login</button>&nbsp;&nbsp;&nbsp;
+    <button class="portal-btn" style="background: var(--secondary);" onclick="navigateTo('faculty')">Faculty Login</button>&nbsp;&nbsp;&nbsp;
+    <button class="portal-btn" style="background: var(--accent);" onclick="navigateTo('results')">Check Results</button>
+</section>
+
+<footer>
+    <p>&copy; 2026 Pinnacle Scholars Academy, Noida. Empowering Futures.</p>
+</footer>
+
+<script>
+    // Initialize AOS
+    AOS.init({
+        duration: 800, 
+        once: true     
+    });
+
+    // Toggle logic managing application theme layout properties
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', targetTheme);
+        
+        const toggleBtn = document.getElementById('themeToggleBtn');
+        if (targetTheme === 'dark') {
+            toggleBtn.innerHTML = '☀️ Light Mode';
+        } else {
+            toggleBtn.innerHTML = '🌙 Dark Mode';
+        }
+    }
+
+    // Dynamic Tracking Monitoring scroll context boundaries
+    window.addEventListener('scroll', () => {
+        const scrollBtn = document.getElementById('globalScrollBtn');
+        const midPoint = document.documentElement.scrollHeight / 2;
+        
+        if (window.scrollY > midPoint) {
+            scrollBtn.classList.remove('pointing-down');
+        } else {
+            scrollBtn.classList.add('pointing-down');
+        }
+    });
+
+    // Dual directional routing actions
+    function handleNavigation() {
+        const scrollBtn = document.getElementById('globalScrollBtn');
+        if (scrollBtn.classList.contains('pointing-down')) {
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth'
+            });
+        } else {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // Populate Dynamic Registered Faculty into Directory
+    window.addEventListener('DOMContentLoaded', () => {
+        const directoryGrid = document.getElementById('facultyDirectoryGrid');
+        const registeredFaculty = JSON.parse(localStorage.getItem('registered_faculty')) || [];
+        const currentYear = 2026;
+
+        registeredFaculty.forEach(fac => {
+            let yearsOfTenure = 0;
+            if (fac.enrollmentDate) {
+                const enrollYear = new Date(fac.enrollmentDate).getFullYear();
+                yearsOfTenure = currentYear - enrollYear;
+                if(yearsOfTenure < 0) yearsOfTenure = 0;
+            }
+
+            const facCard = document.createElement('div');
+            facCard.className = 'card';
+            facCard.setAttribute('data-aos', 'zoom-in-up');
+            facCard.innerHTML = `
+                <h3 style="color: var(--accent); margin-bottom:5px;">${fac.name}</h3>
+                <p style="margin:2px 0;"><strong>Domain:</strong> ${fac.domain}</p>
+                <p style="margin:2px 0;"><strong>Qualifications:</strong> ${fac.qualifications}</p>
+                <p style="margin:2px 0;"><strong>Mobile:</strong> ${fac.mobile} | <strong>Email:</strong> ${fac.mail}</p>
+                <p style="margin:2px 0;"><strong>Address:</strong> ${fac.address}</p>
+                <p style="margin:2px 0;"><strong>Achievements:</strong> ${fac.achievements}</p>
+                <p style="margin:2px 0;"><strong>Awards:</strong> ${fac.awards}</p>
+                <p style="margin:5px 0 0 0; color: var(--accent); font-weight:bold;">🕒 Institute System Tenure Count: ${yearsOfTenure} Years</p>
+            `;
+            directoryGrid.appendChild(facCard);
+        });
+    });
+
+    // Unified Razorpay Checkout Engine Function
+    async function processRazorpayPayment(amountInINR, studentDetails = {}) {
+    try {
+        if (!amountInINR || amountInINR < 1) {
+            alert("Payment amount must be at least ₹1");
+            return;
+        }
+        const targetAmountPaise = Math.round(amountInINR * 100);
+        console.log("Creating Razorpay Order...");
+        console.log("Sending Request To Backend...");
+        const response = await fetch('http://localhost:3000/api/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: targetAmountPaise,
+                currency: 'INR',
+                receipt: 'receipt_' + Date.now()
+            })
+        });
+        console.log("Response Status:", response.status);
+        console.log("Response OK:", response.ok);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.log("Server Error:", errorText);
+            throw new Error("Backend server responded with error");
+        }
+        const orderData = await response.json();
+        console.log("full backedn response:", orderData);
+        const options = {
+            key: "rzp_test_SpphA7vU94jKsy",
+            amount: orderData.amount,
+            currency: orderData.currency,
+            name: "Pinnacle Scholars Academy",
+            description: "Educational Fee Payment",
+            order_id: orderData.order_id,
+            handler: async function (paymentReceipt) {
+                try {
+                    const verificationResponse = await fetch('http://localhost:3000/api/verify-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                       body: JSON.stringify({
+
+    razorpay_order_id:
+        paymentReceipt.razorpay_order_id,
+
+    razorpay_payment_id:
+        paymentReceipt.razorpay_payment_id,
+
+    razorpay_signature:
+        paymentReceipt.razorpay_signature,
+
+    student_id:
+        studentDetails.student_id,
+
+    payment_type:
+        studentDetails.payment_type,
+
+    paid_amount:
+        amountInINR
+
+})
+                    });
+                    const verificationResult = await verificationResponse.json();
+                    console.log("Verification Result:", verificationResult);
+                    if (verificationResult.success) {
+
+    // UPDATE LOCAL STORAGE
+
+    const students =
+        JSON.parse(
+            localStorage.getItem('registered_students')
+        ) || [];
+
+    const studentIndex = students.findIndex(
+        s => s.id === studentDetails.student_id
+    );
+
+    if (studentIndex !== -1) {
+
+        const oldPaid =
+            parseFloat(
+                students[studentIndex].feesPaid
+            ) || 0;
+
+        const totalFees =
+            parseFloat(
+                students[studentIndex].totalFees
+            ) || 50000;
+
+        const newPaid =
+            oldPaid + amountInINR;
+
+        const remaining =
+            totalFees - newPaid;
+
+        students[studentIndex].feesPaid =
+            newPaid;
+
+        students[studentIndex].remainingFees =
+            remaining;
+
+        localStorage.setItem(
+            'registered_students',
+            JSON.stringify(students)
+        );
+    }
+
+    alert(
+
+"Payment Successful!\n\n" +
+
+"Payment ID: " +
+paymentReceipt.razorpay_payment_id +
+
+"\n\nPaid Amount: ₹" +
+amountInINR +
+
+"\n\nRemaining Fees: ₹" +
+remaining
+);
+
+}
+                    else {
+                        alert("Payment verification failed");
+                    }
+                } catch (verificationError) {
+                    console.log("Verification Error:", verificationError);
+                    alert("Payment verification server error");
+                }
+            },
+            prefill: {
+                name: studentDetails.name || "Student",
+                email: studentDetails.email || "student@example.com",
+                contact: studentDetails.contact || "9999999999"
+            },
+            theme: {
+                color: "#1a365d"
+            },
+            modal: {
+                ondismiss: function () {
+                    console.log("Payment popup closed");
+                }
+            }
+        };
+        const razorpayWindow = new Razorpay(options);
+        razorpayWindow.on('payment.failed', function (response) {
+            console.log("Payment Failed:", response);
+            alert(
+                "Payment Failed\n" +
+                response.error.description
+            );
+        });
+        razorpayWindow.open();
+    } catch (error) {
+        console.log("FULL PAYMENT ERROR:", error);
+        alert(
+            "Backend connection failed.\n\n" + "Check:\n" + "1. Node server running\n" + "2. Port 3000 active\n" + "3. CORS enabled\n" + "4. API route exists");
+    }
+}
+    async function initiateGeneralPayment() {
+
+    try {
+
+        // STEP 1
+        const studentId = prompt("Enter Student ID");
+
+        if (!studentId) {
+            return;
+        }
+
+        // STEP 2
+        const students =
+            JSON.parse(
+                localStorage.getItem('registered_students')
+            ) || [];
+
+        // STEP 3
+        const student = students.find(
+            s =>
+                s.id &&
+                s.id.trim().toLowerCase() ===
+                studentId.trim().toLowerCase()
+        );
+
+        // STEP 4
+        if (!student) {
+
+            alert("Student Not Found");
+            return;
+        }
+
+        // STEP 5
+        const totalFees =
+            parseFloat(student.totalFees) || 50000;
+
+        const paidFees =
+            parseFloat(student.feesPaid) || 0;
+
+        const remainingFees =
+            totalFees - paidFees;
+
+        // STEP 6
+        alert(
+
+`Student Details
+
+Name: ${student.name}
+
+Domain: ${student.domain}
+
+Total Fees: ₹${totalFees}
+
+Paid Fees: ₹${paidFees}
+
+Remaining Fees: ₹${remainingFees}
+`
+        );
+
+        // STEP 7
+        if (remainingFees <= 0) {
+
+            alert("All Fees Already Paid");
+            return;
+        }
+
+        // STEP 8
+        const paymentOption = prompt(
+            "Choose Payment Type\n\n1 = Full Payment\n2 = Partial Payment"
+        );
+
+        let amountToPay = 0;
+        let paymentType = '';
+
+        // FULL
+        if (paymentOption === '1') {
+
+            amountToPay = remainingFees;
+            paymentType = 'FULL';
+
+        }
+
+        // PARTIAL
+        else if (paymentOption === '2') {
+
+            const partialAmount = prompt(
+                `Enter Partial Amount\nRemaining Fees: ₹${remainingFees}`
+            );
+
+            amountToPay = parseFloat(partialAmount);
+
+            paymentType = 'PARTIAL';
+
+            if (
+                isNaN(amountToPay) ||
+                amountToPay <= 0 ||
+                amountToPay > remainingFees
+            ) {
+
+                alert("Invalid Amount");
+                return;
+            }
+
+        }
+
+        else {
+
+            alert("Invalid Option");
+            return;
+        }
+
+        // STEP 9
+        processRazorpayPayment(
+            amountToPay,
+            {
+                student_id: student.id,
+                payment_type: paymentType,
+                name: student.name,
+                email: student.email,
+                contact: student.mobile
+            }
+        );
+
+    } catch(err) {
+
+        console.log(err);
+        alert("Payment Initialization Failed");
+    }
+}
+
+async function startTest(domain) {
+
+    const existingPortal = document.getElementById("ultimateJeePortal");
+    if(existingPortal) existingPortal.remove();
+
+    const portal = document.createElement("div");
+
+    portal.id = "ultimateJeePortal";
+
+    portal.innerHTML = `
+
+    <style>
+
+        #ultimateJeePortal{
+            position:fixed;
+            inset:0;
+            overflow:auto;
+            z-index:999999;
+            background:
+            radial-gradient(circle at top left,#16355d,#07111d 60%);
+            font-family:'Segoe UI',sans-serif;
+        }
+
+        /* MOVING LINES */
+
+        .portal-line{
+            position:absolute;
+            width:2px;
+            height:220px;
+            background:linear-gradient(to bottom,transparent,#00d9ff,transparent);
+            opacity:0.25;
+            animation:lineMove linear infinite;
+        }
+
+        .portal-line.reverse{
+            animation-name:lineReverse;
+        }
+
+        @keyframes lineMove{
+            from{
+                transform:translateY(-250px);
+            }
+            to{
+                transform:translateY(120vh);
+            }
+        }
+
+        @keyframes lineReverse{
+            from{
+                transform:translateY(120vh);
+            }
+            to{
+                transform:translateY(-250px);
+            }
+        }
+
+        /* FLOATING OBJECTS */
+
+        .floating-orb{
+            position:absolute;
+            border-radius:50%;
+            background:rgba(0,217,255,0.08);
+            animation:floatOrb 12s infinite ease-in-out;
+            backdrop-filter:blur(5px);
+        }
+
+        @keyframes floatOrb{
+
+            0%{
+                transform:translateY(0px) rotate(0deg);
+            }
+
+            50%{
+                transform:translateY(-40px) rotate(180deg);
+            }
+
+            100%{
+                transform:translateY(0px) rotate(360deg);
+            }
+        }
+
+        /* MAIN CARD */
+
+        .jee-card{
+            position:relative;
+            width:92%;
+            max-width:1000px;
+            margin:40px auto;
+            padding:35px;
+            border-radius:25px;
+            background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.12);
+            backdrop-filter:blur(18px);
+            box-shadow:0 10px 50px rgba(0,0,0,0.45);
+            color:white;
+        }
+
+        .jee-card h1{
+            text-align:center;
+            font-size:40px;
+            margin-bottom:12px;
+        }
+
+        .jee-card p{
+            line-height:1.8;
+            color:#d9efff;
+        }
+
+        .instruction-box{
+            margin-top:25px;
+            padding:25px;
+            border-radius:18px;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+        }
+
+        .instruction-box h2{
+            color:#00d9ff;
+            margin-bottom:18px;
+        }
+
+        .instruction-box li{
+            margin-bottom:14px;
+            line-height:1.8;
+        }
+
+        .verify-section{
+            margin-top:35px;
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+        }
+
+        .verify-section input{
+            padding:16px;
+            border:none;
+            border-radius:12px;
+            outline:none;
+            background:rgba(255,255,255,0.12);
+            color:white;
+            font-size:16px;
+        }
+
+        .verify-section input::placeholder{
+            color:#cdefff;
+        }
+
+        .verify-section input:focus{
+            box-shadow:0 0 18px rgba(0,217,255,0.4);
+        }
+
+        .jee-btn{
+            padding:16px;
+            border:none;
+            border-radius:12px;
+            background:linear-gradient(90deg,#00d9ff,#0077ff);
+            color:white;
+            font-size:17px;
+            font-weight:bold;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .jee-btn:hover{
+            transform:translateY(-3px);
+            box-shadow:0 10px 25px rgba(0,217,255,0.3);
+        }
+
+        .statusText{
+            display:none;
+            color:#9ae6ff;
+            text-align:center;
+        }
+
+    </style>
+
+    <!-- MOVING LINES -->
+
+    ${Array.from({length:30}).map((_,i)=>`
+        <div class="portal-line ${i%2===0 ? 'reverse':''}"
+            style="
+                left:${Math.random()*100}%;
+                animation-duration:${5 + Math.random()*8}s;
+                animation-delay:${Math.random()*5}s;
+            ">
+        </div>
+    `).join("")}
+
+    <!-- FLOATING ORBS -->
+
+    ${Array.from({length:12}).map(()=>`
+        <div class="floating-orb"
+            style="
+                width:${80 + Math.random()*140}px;
+                height:${80 + Math.random()*140}px;
+                top:${Math.random()*100}%;
+                left:${Math.random()*100}%;
+                animation-duration:${8 + Math.random()*10}s;
+            ">
+        </div>
+    `).join("")}
+
+    <div class="jee-card">
+
+        <h1>JEE Monthly Test Portal</h1>
+
+        <p>
+            Read all instructions carefully before proceeding.
+        </p>
+
+        <div class="instruction-box">
+
+            <h2>Exam Instructions</h2>
+
+            <ul>
+
+                <li>
+                    Total Questions : <b>75 Questions</b>
+                </li>
+
+                <li>
+                    Physics → 25 Questions
+                    (20 MCQ + 5 Numerical)
+                </li>
+
+                <li>
+                    Chemistry → 25 Questions
+                    (20 MCQ + 5 Numerical)
+                </li>
+
+                <li>
+                    Mathematics → 25 Questions
+                    (20 MCQ + 5 Numerical)
+                </li>
+
+                <li>
+                    Questions appear continuously :
+                    Physics → Chemistry → Maths
+                </li>
+
+                <li>
+                    MCQ Correct Answer :
+                    <b>+4 Marks</b>
+                </li>
+
+                <li>
+                    MCQ Wrong Answer :
+                    <b>-1 Negative Marking</b>
+                </li>
+
+                <li>
+                    Numerical Questions :
+                    <b>+4 Marks</b> and
+                    <b>No Negative Marking</b>
+                </li>
+
+                <li>
+                    Student can attempt questions in any order.
+                </li>
+
+                <li>
+                    Your Student ID & DOB are required
+                    for result verification and result portal.
+                </li>
+
+            </ul>
+
+        </div>
+
+        <div class="verify-section">
+
+            <input
+                type="text"
+                id="jeeStudentId"
+                placeholder="Enter Student ID"
+            >
+
+            <input
+                type="date"
+                id="jeeStudentDob"
+            >
+
+            <button class="jee-btn" id="verifyEligibilityBtn">
+                Verify Eligibility & Start Test
+            </button>
+
+            <p align="center"><a href="home.html" class="back">← Return Home</a></p>
+
+            <div class="statusText" id="statusText">
+                Verifying student...
+            </div>
+
+        </div>
+
+    </div>
+    `;
+
+    document.body.appendChild(portal);
+
+    // VERIFY BUTTON
+
+    document
+    .getElementById("verifyEligibilityBtn")
+    .addEventListener("click", async function(){
+
+        const studentId =
+            document.getElementById("jeeStudentId").value.trim();
+
+        const dob =
+            document.getElementById("jeeStudentDob").value;
+
+        if(!studentId || !dob){
+
+            alert("Please enter Student ID and DOB");
+
+            return;
+        }
+
+        // SAVE LOGIN INFO
+
+        localStorage.setItem("active_student_id", studentId);
+        localStorage.setItem("active_student_dob", dob);
+
+        const status =
+            document.getElementById("statusText");
+
+        status.style.display = "block";
+
+        try{
+
+            // ELIGIBILITY CHECK
+
+            const eligibilityResponse = await fetch(
+                `http://localhost:3000/api/student-eligible-test/${studentId}`
+            );
+
+            if(!eligibilityResponse.ok){
+                throw new Error("Eligibility API Failed");
+            }
+
+            const eligibilityData =
+                await eligibilityResponse.json();
+
+            if(!eligibilityData.eligible){
+
+                status.style.display = "none";
+
+                alert(
+                    `You are not eligible for monthly test.\n\nRemaining Days : ${eligibilityData.remainingDays}`
+                );
+
+                return;
+            }
+
+            status.innerHTML =
+                "Eligibility verified. Fetching test...";
+
+            // FETCH TEST
+
+            const response = await fetch(
+                `http://localhost:3000/api/tests/${domain}`
+            );
+
+            if(!response.ok){
+                throw new Error("Test API Failed");
+            }
+
+            const tests = await response.json();
+
+            if(tests.length === 0){
+
+                alert("No tests are published yet.");
+
+                return;
+            }
+
+            const latestTest = tests[0];
+
+            document
+            .getElementById("ultimateJeePortal")
+            .remove();
+
+            showTestInterface(latestTest);
+
+        }catch(err){
+
+            console.error(err);
+
+            alert(
+                "Test system failed.\n\n" +
+                "Check backend server & APIs."
+            );
+        }
+
+    });
+
+}
+
+function showTestInterface(testObject) {
+
+    let parsedQuestions = [];
+
+    try{
+
+        if(typeof testObject.questions === "string"){
+
+            parsedQuestions =
+                JSON.parse(testObject.questions);
+
+        }else{
+
+            parsedQuestions = testObject.questions;
+        }
+
+    }catch(err){
+
+        alert("Question paper invalid");
+
+        console.error(err);
+
+        return;
+    }
+
+    if(parsedQuestions.length === 0){
+
+        alert("No questions available");
+
+        return;
+    }
+
+    let htmlQuestions = "";
+
+    parsedQuestions.forEach((q,index)=>{
+
+        const subject =
+            q.subject || "GENERAL";
+
+        htmlQuestions += `
+
+        <div class="question-card">
+
+            <div class="question-top">
+
+                <span class="subject-badge">
+                    ${subject}
+                </span>
+
+                <span class="question-number">
+                    Q${index + 1}
+                </span>
+
+            </div>
+
+            <h3 class="question-title">
+                ${q.question}
+            </h3>
+
+            <div class="options-box">
+
+                ${q.type === "numerical" ? `
+
+                    <input
+                        type="number"
+                        name="q${index}"
+                        placeholder="Enter Numerical Answer"
+                        class="numerical-input"
+                    >
+
+                ` : `
+
+                    ${q.options.map(opt=>`
+
+                        <label class="option-label">
+
+                            <input
+                                type="radio"
+                                name="q${index}"
+                                value="${opt}"
+                            >
+
+                            ${opt}
+
+                        </label>
+
+                    `).join("")}
+
+                `}
+
+            </div>
+
+        </div>
+        `;
+    });
+
+    const wrapper = document.createElement("div");
+
+    wrapper.id = "jeeTestInterface";
+
+    wrapper.innerHTML = `
+
+    <style>
+
+        #jeeTestInterface{
+
+            position:fixed;
+            inset:0;
+            overflow:auto;
+            background:#07111d;
+            z-index:999999;
+            font-family:'Segoe UI',sans-serif;
+        }
+
+        .test-header{
+
+            position:sticky;
+            top:0;
+            z-index:999;
+            background:#0d1f33;
+            padding:18px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            border-bottom:1px solid rgba(255,255,255,0.08);
+        }
+
+        .test-header h1{
+            color:white;
+            margin:0;
+        }
+
+        .submit-btn{
+
+            background:linear-gradient(90deg,#00d9ff,#0077ff);
+            border:none;
+            padding:14px 25px;
+            border-radius:10px;
+            color:white;
+            cursor:pointer;
+            font-weight:bold;
+        }
+
+        .questions-container{
+
+            max-width:1100px;
+            margin:auto;
+            padding:30px;
+        }
+
+        .question-card{
+
+            background:#10253d;
+            margin-bottom:28px;
+            border-radius:18px;
+            padding:25px;
+            border:1px solid rgba(255,255,255,0.08);
+        }
+
+        .question-top{
+
+            display:flex;
+            justify-content:space-between;
+            margin-bottom:15px;
+        }
+
+        .subject-badge{
+
+            background:#00d9ff22;
+            color:#7cecff;
+            padding:6px 12px;
+            border-radius:30px;
+            font-size:14px;
+        }
+
+        .question-number{
+
+            color:#ffffff;
+            font-weight:bold;
+        }
+
+        .question-title{
+
+            color:white;
+            line-height:1.7;
+            margin-bottom:18px;
+        }
+
+        .option-label{
+
+            display:block;
+            padding:14px;
+            margin-bottom:12px;
+            border-radius:12px;
+            background:#18324f;
+            color:white;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .option-label:hover{
+
+            background:#214467;
+        }
+
+        .numerical-input{
+
+            width:100%;
+            padding:15px;
+            border:none;
+            border-radius:10px;
+            background:#18324f;
+            color:white;
+            outline:none;
+        }
+
+    </style>
+
+    <div class="test-header">
+
+        <h1>${testObject.title}</h1>
+
+        <button class="submit-btn" id="submitTestBtn">
+            Submit Test
+        </button>
+
+    </div>
+
+    <div class="questions-container">
+
+        ${htmlQuestions}
+
+    </div>
+    `;
+
+    document.body.appendChild(wrapper);
+
+    // SUBMIT
+
+    document
+    .getElementById("submitTestBtn")
+    .addEventListener("click", function(){
+
+        let score = 0;
+
+        parsedQuestions.forEach((q,index)=>{
+
+            let selected;
+
+            if(q.type === "numerical"){
+
+                selected =
+                    document.querySelector(
+                        `input[name="q${index}"]`
+                    )?.value;
+
+            }else{
+
+                selected =
+                    document.querySelector(
+                        `input[name="q${index}"]:checked`
+                    )?.value;
+            }
+
+            if(selected){
+
+                if(String(selected).trim() === String(q.answer).trim()){
+
+                    score += 4;
+
+                }else{
+
+                    if(q.type !== "numerical"){
+
+                        score -= 1;
+                    }
+                }
+            }
+
+        });
+
+        // SAVE RESULT
+
+        const resultData = {
+
+            student_id:
+                localStorage.getItem("active_student_id"),
+
+            dob:
+                localStorage.getItem("active_student_dob"),
+
+            test_id:testObject.test_id,
+
+            score:score,
+
+            total:
+                parsedQuestions.length * 4,
+
+            submitted_at:
+                new Date().toLocaleString()
+        };
+
+        let allResults =
+            JSON.parse(
+                localStorage.getItem("student_test_results")
+            ) || [];
+
+        allResults.push(resultData);
+
+localStorage.setItem(
+    "student_test_results",
+    JSON.stringify(allResults)
+);
+
+// BACKEND SAVE
+
+fetch(
+    "http://localhost:3000/api/submit-result",
+    {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            student_id:
+                localStorage.getItem("active_student_id"),
+
+            student_name:
+                localStorage.getItem("active_student_name"),
+
+            test_id:testObject.test_id,
+
+            score:score
+        })
+    }
+)
+.then(res=>res.json())
+.then(data=>{
+
+    console.log("Result Saved:",data);
+
+})
+.catch(err=>{
+
+    console.error(
+        "Backend Result Save Failed",
+        err
+    );
+
+});
+
+        alert(
+            `Test Submitted Successfully\n\n` +
+            `Score : ${score}\n\n` +
+            `Result saved successfully for Result Portal.`
+        );
+
+        location.reload();
+
+    });
+
+}
+        function navigateTo(target) {
+        if (target === 'student') window.location.href = 'student-portal.html'; 
+        else if (target === 'faculty') window.location.href = 'faculty-portal.html';
+        else if (target === 'results') window.location.href = 'results-portal.html';
+        else if (target === 'enroll') window.location.href = 'enrollment.html';
+    }
+</script>
+</body>
+</html>

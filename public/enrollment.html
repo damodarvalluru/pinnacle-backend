@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enrollment | Pinnacle Scholars</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --glass-bg: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --accent-primary: #f97316;
+            --accent-hover: #ea580c;
+            --success-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-gradient);
+    height: 100vh; /* Locks the viewport frame strictly to prevent accidental vertical scrolling */
+    width: 100vw;
+    display: flex;
+    flex-direction: column; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 30px 20px 15px 20px; /* Highly optimized breathing room layout margins */
+    overflow: hidden; /* Suppresses baseline rendering bleed scroll elements */
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Middle positioning grid block for card layout engine */
+.page-center-envelope {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    z-index: 2;
+}
+
+/* Sleek minimalistic structural variables for bottom typography footprint */
+footer {
+    width: 100%;
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+    margin-top: 10px;
+}
+
+footer p {
+    margin: 0;
+    color: white; /* Soft premium silver color reduces eyesore distraction */
+    font-size: x-large;
+    letter-spacing: 0.5px;
+}
+            /* Moving Particles Canvas Background */
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Container & Animations */
+        .enroll-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 520px;
+            perspective: 1000px;
+        }
+
+        .enroll-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            transform-style: preserve-3d;
+            animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) rotateX(-10deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 4px;
+            background: var(--accent-primary);
+            border-radius: 2px;
+            margin: 10px auto 0 auto;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 22px;
+            opacity: 0;
+            animation: fadeInElement 0.5s ease forwards;
+        }
+        .form-group:nth-child(1) { animation-delay: 0.2s; }
+        .form-group:nth-child(2) { animation-delay: 0.3s; }
+        .form-group:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes fadeInElement {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        select option, select optgroup {
+            background: #1e1b4b;
+            color: var(--text-primary);
+        }
+
+        /* Buttons & Actions */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .nav-footer {
+            text-align: center;
+            margin-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 20px;
+        }
+
+        /* Modified structural arrangement for the multiple footer buttons */
+.nav-footer {
+    text-align: center;
+    margin-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column; /* Stacks the two navigation targets smoothly */
+    align-items: center;
+    gap: 12px; /* Generates a perfectly balanced gap margin between both anchors */
+}
+
+.btn-portal-shortcut {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    width: 100%; /* Matches the structural horizontal footprint of the form elements */
+    box-sizing: border-box;
+}
+
+.btn-portal-shortcut:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.15);
+}
+
+.btn-home {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    padding: 6px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-home:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+        /* Success Display Matrix */
+        .success-box {
+            display: none;
+            text-align: center;
+            animation: successScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes successScale {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid var(--success-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            color: var(--success-green);
+            font-size: 2rem;
+            animation: pulseIcon 2s infinite;
+        }
+
+        @keyframes pulseIcon {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .success-box h3 {
+            color: #ffffff;
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+        }
+
+        .id-badge {
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px dashed var(--accent-primary);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .id-badge p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        #newId {
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
+        }
+
+        .portal-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .portal-link:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+    <!-- Center Content Containment Envelope -->
+    <div class="page-center-envelope">
+        <div class="enroll-container">
+            <div class="enroll-card">
+                
+                <!-- Dynamic Active Entry Form Structure -->
+                <div id="enrollFormContainer">
+                    <h2>New Student Enrollment</h2>
+                    <div class="form-group">
+                        <label for="studentName">Full Name</label>
+                        <input type="text" id="studentName" placeholder="e.g. Alex Mercer" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">Date of Birth</label>
+                        <input type="date" id="dob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="domain">Select Academic Domain</label>
+                        <select id="domain">
+                            <optgroup label="Intermediate Programs">
+                                <option value="MPC-JEE">MPC (JEE Main/Adv)</option>
+                                <option value="BIPC-NEET">BiPC (NEET)</option>
+                            </optgroup>
+                            <optgroup label="M.Tech Postgrad Specializations">
+                                <option value="MTECH-CS">Computer Science Engineering</option>
+                                <option value="MTECH-STR">Structural Engineering</option>
+                                <option value="MTECH-VLSI">VLSI Design Systems</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <button class="btn-submit" onclick="enrollStudent()">Complete Enrollment</button>
+                    
+                    <div class="nav-footer">
+                        <a href="student-portal.html" class="btn-portal-shortcut"><span>🔑</span> Go to Student Portal to Login</a>
+                        <a href="home.html" class="btn-home"><span>🏠</span> Back to Home</a>
+                    </div>
+                </div>
+
+                <!-- UI Success Confirmation Card Output View -->
+                <div id="successBox" class="success-box">
+                    <div class="success-icon">✓</div>
+                    <h3>Registration Complete</h3>
+                    <p style="color: var(--text-secondary);">Welcome to Pinnacle Scholars Academy.</p>
+                    
+                    <div class="id-badge">
+                        <p>YOUR UNIQUE ACADEMIC IDENTIFIER</p>
+                        <strong id="newId"></strong>
+                    </div>
+                    
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px;">
+                        Please secure this ID alongside your selected DOB parameters for full dashboard ecosystem authorization.
+                    </p>
+                    <a href="student-portal.html" class="portal-link">Enter Student Portal &rarr;</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Perfectly Fixed Legible Anchored Copyright Footer -->
+    <footer>
+        <p>&copy; 2026 Pinnacle Scholars Academy, Noida. Empowering Futures.</p>
+    </footer>
+
+<script>
+    // --- INTEGRATED 2D LIVE PARTICLE BACKGROUND SIMULATION ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.vx = (Math.random() - 0.5) * 0.6;
+            this.vy = (Math.random() - 0.5) * 0.6;
+            this.radius = Math.random() * 2 + 1;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.fill();
+        }
+    }
+
+    function initParticles() {
+        particles = [];
+        const count = Math.min(Math.floor(canvas.width / 15), 75);
+        for (let i = 0; i < count; i++) {
+            particles.push(new Particle());
+        }
+    }
+    initParticles();
+
+    function animateBackground() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+            
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = `rgba(249, 115, 22, ${0.12 * (1 - dist / 120)})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animateBackground);
+    }
+    animateBackground();
+
+
+    // --- DATA LOGIC & CORE PROCESSING ENGINES ---
+    function generateStudentId(selectedDomain) {
+        const registeredStudents = JSON.parse(localStorage.getItem('registered_students')) || [];
+        const currentYear = new Date().getFullYear();
+
+        let domainPrefix = "I";
+        if (selectedDomain.toLowerCase().includes("mtech") || selectedDomain.toLowerCase().includes("m.tech")) {
+            domainPrefix = "M";
+        }
+
+        const sameDomainStudents = registeredStudents.filter(student => {
+            if (!student.id) return false;
+            return student.id.startsWith(`PS-${domainPrefix}-${currentYear}`);
+        });
+
+        const sequence = (sameDomainStudents.length + 1).toString().padStart(4, '0');
+        return `PS-${domainPrefix}-${currentYear}-${sequence}`;
+    }
+
+    function enrollStudent() {
+        const studentName = document.getElementById('studentName').value.trim();
+        const dob = document.getElementById('dob').value;
+        const domain = document.getElementById('domain').value;
+
+        if (!studentName || !dob || !domain) {
+            alert("All enrollment parameters are required. Please verify entry arrays.");
+            return;
+        }
+
+        const generatedId = generateStudentId(domain);
+
+        let courseFee = 50000;
+        if (domain.toLowerCase().includes("mtech") || domain.toLowerCase().includes("m.tech")) {
+            courseFee = 80000;
+        }
+
+        const studentObject = {
+            id: generatedId,
+            name: studentName,
+            dob: dob,
+            domain: domain,
+            totalFees: courseFee,
+            feesPaid: 0,
+            enrollmentDate: new Date().toISOString()
+        };
+
+        const registeredStudents = JSON.parse(localStorage.getItem('registered_students')) || [];
+        registeredStudents.push(studentObject);
+        localStorage.setItem('registered_students', JSON.stringify(registeredStudents));
+
+        // UI View State Execution Transitions
+        document.getElementById('newId').innerText = generatedId;
+        document.getElementById('enrollFormContainer').style.display = 'none';
+        document.getElementById('successBox').style.display = 'block';
+    }
+</script>
+</body>
+</html>

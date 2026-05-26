@@ -1,0 +1,81 @@
+i want u to modify the code as per the below conditions 
+
+conditions:
+
+5. take the student id instead of name to make update their weekly test marks in the respective student's student portal for further usage 
+
+6. i want u to make the weekly test as monthly test , so that it may be easier for student for to prepare
+
+7. as i am mentioning the monthly test , i want u to generate totally 10 tests + 1 grand test (maintain the month the student enrolled . for ex: if the student enrolled the course in june starting then he should get a monthly test at end of the june month and give him the deadline as the last 3 days in evry month to finish their monthly test, followed by conduct 9 tests so that it reaches to next year march month end then in april month give him full preparation time and conduct the grand test in may month and relieve the student with a 2 stamped certificate ) for a student and also maintain their attempt for each and every test by giving them a deadline for every month to attempt the respective test
+8. so i want u to maintain the data effectively as per the above conditions 
+so help me in code updations
+
+************ permanent live ************
+If you want your backend server to be permanently active so that students can pay their fees at any time of the day without you keeping a terminal open or running commands on your laptop, you cannot keep hosting it on your local machine (localhost).
+
+When you shut down your computer or close your terminal, your local server dies, and the fee button breaks.
+
+To run the command only once and keep the backend alive forever, you need to deploy your backend to a free cloud hosting platform. Two of the absolute best and easiest platforms for Node.js backends are Render and Railway.
+-------------------------------------
+Here is how to set it up completely in a few minutes so it runs forever on the cloud.
+-------------------------------------
+Step 1: Update your HTML Frontend Fetch URL
+Since your backend will live on the internet instead of your computer, you need to change your frontend HTML fetch URLs to point to your new cloud server instead of localhost.
+
+Open your index.html (or wherever your payment script is) and find the two lines we edited earlier. Change them to look like this:
+
+JavaScript
+// Change localhost to your future cloud URL (you will get this link from Render/Railway)
+fetch('https://your-pinnacle-backend.onrender.com/api/create-order', {
+JavaScript
+// Do the same for the verification endpoint
+fetch('https://your-pinnacle-backend.onrender.com/api/verify-payment', {
+Step 2: Push your Project to GitHub
+Cloud hosting platforms pull your code directly from a GitHub repository to run it.
+---------------------------------------
+Create a new repository on your GitHub account named pinnacle-backend.
+---------------------------------------
+Open your terminal in your project folder and run these commands to push your code:
+
+Bash
+git init
+git add .
+git commit -m "Deploying payment backend"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/pinnacle-backend.git
+git push -u origin main
+(Note: Your .gitignore file is already perfectly configured, so your secret API keys in the .env file will not be leaked to GitHub).
+-------------------------------------
+Step 3: Deploy to Render (Completely Free)
+Render will take your code from GitHub and host it in the cloud. It runs your start script automatically and keeps it online.
+---------------------------------------
+Go to Render.com and sign up using your GitHub account.
+
+Click the New + button and select Web Service.
+
+Connect your pinnacle-backend repository.
+
+Set the following configurations on the screen:
+
+Name: pinnacle-backend
+
+Runtime: Node
+
+Build Command: npm install
+
+Start Command: npm start (This tells Render to run your server via node server.js once)
+
+Instance Type: Free
+-----------------------------------
+Scroll down to the Environment Variables section and manually add your secret keys from your .env file:
+
+Add RAZORPAY_KEY_ID = rzp_test_SpphA7vU94jKsy
+
+Add RAZORPAY_KEY_SECRET = UM6LeexUvb7VnYaKtAK0S8Th
+--------------------------------
+Click Deploy Web Service.
+*************************************************************************
+You're Done! 🎉
+Render will give you a public URL (like https://pinnacle-backend.onrender.com). Paste that URL into your HTML code (as shown in Step 1).
+
+Now, your backend engine is running permanently on cloud servers. Students can access your site and click the fee button successfully 24/7, even if your personal laptop is completely turned off!

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Faculty Portal | Pinnacle Scholars</title>
+    <style>
+        /* Modern Design Variables with a Premium, Rare Aesthetic */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #f59e0b;
+            --accent-success: #10b981;
+            --input-bg: rgba(15, 23, 42, 0.6);
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background: var(--bg-gradient); 
+            color: var(--text-main);
+            margin: 0; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Dynamic Canvas Layer Mapping */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Keeps animation behind UI panels */
+            pointer-events: none;
+        }
+
+        /* Ensure interactive panels sit securely over canvas layers */
+        .portal-container, .dashboard, footer {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Premium adjusted footer styling matching layout norms */
+        footer {
+            margin-top: auto;
+            padding: 20px 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid var(--card-border);
+        }
+
+        .portal-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-grow: 1;
+            padding: 40px 20px; 
+            box-sizing: border-box; 
+        }
+
+        /* 
+           Cinematic 3D Scale & Fade-in Entry Animation 
+           Optimized using transform/opacity to prevent layout shifts
+        */
+        @keyframes dynamicCardEntry {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.96) rotateX(-4deg);
+                filter: blur(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotateX(0deg);
+                filter: blur(0);
+            }
+        }
+
+        .portal-card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 40px; 
+            border-radius: 16px; 
+            width: 100%;
+            max-width: 460px; 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 
+                        inset 0 1px 0 var(--card-border); 
+            border: 1px solid var(--card-border);
+            box-sizing: border-box;
+            animation: dynamicCardEntry 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            perspective: 1000px;
+        }
+
+        .dashboard { 
+            display: none; 
+            padding: 60px max(5%, 20px); 
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .info-card { 
+            background: rgba(30, 41, 59, 0.4); 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
+            margin-bottom: 24px; 
+            border: 1px solid var(--card-border);
+            border-left: 5px solid var(--accent-primary); 
+        }
+
+        .btn { 
+            width: 100%; 
+            padding: 14px; 
+            background: var(--accent-primary); 
+            color: #0f172a; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 0.95rem;
+            margin-top: 14px; 
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-accent { 
+            background: var(--accent-secondary); 
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-accent:hover {
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+        }
+
+        input, select, textarea { 
+            width: 100%; 
+            padding: 12px 14px; 
+            margin-bottom: 16px; 
+            background: var(--input-bg);
+            border: 1px solid var(--card-border); 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        label { 
+            font-weight: 600; 
+            color: var(--text-muted); 
+            margin-bottom: 6px; 
+            display: block; 
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        a:hover {
+            color: var(--text-main);
+            text-decoration: underline;
+        }
+
+        /* Fixed styling structural mechanics for home action wrapper buttons */
+        .home-btn-link {
+            display: inline-block;
+            width: 100%;
+            margin-top: 15px;
+            text-decoration: none !important;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-muted);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: var(--text-main);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <!-- Portal Master Interface Content Wrapper -->
+    <div class="portal-container" id="authContainer">
+        
+        <!-- Registration Form Layout Panel Block -->
+        <div class="portal-card" id="registerArea">
+            <h2 style="color: var(--text-main); text-align: center; margin-top:0; margin-bottom: 24px; font-weight: 800; letter-spacing: -0.5px;">Faculty Enrollment</h2>
+            
+            <input type="text" id="facName" placeholder="Full Name">
+            <input type="text" id="facAddress" placeholder="Address">
+            <input type="text" id="facDomain" placeholder="Core Domain Specialization (e.g., Mathematics)">
+            <input type="text" id="facMobile" placeholder="Mobile Number">
+            <input type="email" id="facMail" placeholder="Email Address">
+            
+            <label for="facDob">Date of Birth</label>
+            <input type="date" id="facDob">
+            
+            <input type="text" id="facQuals" placeholder="Academic Qualifications (e.g., PhD, M.Tech)">
+            <input type="text" id="facAchieve" placeholder="Key Technical Achievements">
+            <input type="text" id="facAwards" placeholder="Honors / Awards Received">
+            
+            <label for="facEnrollDate">System Enrollment Joining Date</label>
+            <input type="date" id="facEnrollDate" value="2026-01-01">
+
+            <button class="btn btn-accent" onclick="processFacultyEnrollment()">Generate Unique Faculty ID</button>
+            
+            <!-- Structural Link Routing Fixed: Now targets a separate physical file architecture as requested -->
+            <p style="text-align:center; margin-top: 20px; margin-bottom:0;"><a href="#" onclick="toggleAuthViews(false)">Already Enrolled? Login here</a></p>
+            
+            <!-- Fixed Home Button Link wrapping syntax error logic -->
+            <a href="home.html" class="home-btn-link">
+                <button type="button" class="btn btn-secondary">← Return Home</button>
+            </a>
+        </div>
+
+        <!-- Verification Secure Sign-in Layout Panel Block -->
+        <div class="portal-card" id="loginArea" style="display:none;">
+            <h2 style="color: var(--text-main); text-align: center; margin-top:0; margin-bottom: 24px; font-weight: 800;">Faculty Secure Login</h2>
+            <input type="text" id="loginFacId" placeholder="Faculty ID (PS-FAC-2026-XXXX)">
+            <label for="loginFacDob">Date of Birth</label>
+            <input type="date" id="loginFacDob">
+            <button class="btn" onclick="checkFacultyLogin()">Login to Dashboard</button>
+            <p style="text-align:center; margin-top: 20px; margin-bottom:0;"><a href="#" onclick="toggleAuthViews(true)">New Faculty? Register/Enroll here</a></p>
+            <p align="center"><a href="home.html" class="home-btn-link">
+                <span>🏠</span> Home
+            </a></p>
+        </div>
+    </div>
+
+    <!-- Active Live Dashboard Screen Container Context -->
+    <div class="dashboard" id="dashboardArea">
+        <h1 style="color: var(--text-main); margin-bottom: 30px; font-weight: 800;">Faculty Workspace | Welcome, <span id="dispFacName" style="color: var(--accent-primary)"></span></h1>
+        
+        <div class="info-card">
+            <h3 style="margin-top:0; color: var(--text-main)">Verified Identity & System Metrics</h3>
+            <p><strong>Faculty Unique ID:</strong> <span id="dispFacId" style="color:var(--accent-primary); font-weight:bold;"></span></p>
+            <p><strong>Core Specialization Domain:</strong> <span id="dispFacDomain"></span></p>
+            <p><strong>System Tracked Experience:</strong> <span id="dispFacTenure" style="color:var(--accent-secondary); font-weight:bold;"></span> Years in Academy System File</p>
+        </div>
+
+        <div class="info-card">
+            <h3 style="margin-top:0; color: var(--text-main)">Profile Summary Details</h3>
+            <p><strong>Qualifications:</strong> <span id="dispFacQuals"></span></p>
+            <p><strong>Achievements:</strong> <span id="dispFacAchieve"></span></p>
+            <p><strong>Awards:</strong> <span id="dispFacAwards"></span></p>
+            <p><strong>Contact Info:</strong> <span id="dispFacMobile"></span> | <span id="dispFacMail"></span></p>
+            <p><strong>Address Field:</strong> <span id="dispFacAddress"></span></p>
+        </div>
+
+        <!-- Examination Question Paper Setup Generation Context Console Block -->
+        <div class="info-card" style="border-left: 5px solid var(--accent-success);">
+            <h3 style="margin-top:0; color: var(--text-main)">JEE Format Examination Console Engine</h3>
+            <p style="color: var(--text-muted)">Submit mock assessments or official weekly entry test structures directly to the student examination database layer.</p>
+            
+            <label for="testTitle">Test Examination Title/Week Code</label>
+            <input type="text" id="testTitle" placeholder="e.g., JEE Weekly Assessment - Physics Core Module 04">
+            
+            <label for="testQuestions">Examination Question Dataset Payload (Text/JSON)</label>
+            <textarea id="testQuestions" rows="5" placeholder="Enter test questions text data metrics matrix instructions..."></textarea>
+            
+            <button class="btn" style="background: var(--accent-success); color: #0f172a; width: auto; display: inline-block; padding: 12px 30px;" onclick="publishJeeTestFormat()">Publish Live JEE Format Test</button>
+        </div>
+
+        <button onclick="location.reload()" class="btn btn-secondary" style="width: auto; padding: 10px 24px;">Logout Session</button>
+    </div>
+<footer>
+    <p style="text-align: center;color:white;font-size:x-large;">&copy; 2026 Pinnacle Scholars Academy, Noida. Empowering Futures.</p>
+</footer>
+
+<script>
+    let activeFacultySessionObject = null;
+
+    function toggleAuthViews(showRegister) {
+        const loginArea = document.getElementById('loginArea');
+        const registerArea = document.getElementById('registerArea');
+
+        if (showRegister) {
+            if (loginArea) loginArea.style.display = 'none';
+            if (registerArea) {
+                registerArea.style.display = 'block';
+                // Reset visual animation state context
+                registerArea.style.animation = 'none';
+                registerArea.offsetHeight; /* trigger reflow layout engine */
+                registerArea.style.animation = null;
+            }
+        } else {
+            if (loginArea) {
+                loginArea.style.display = 'block';
+                loginArea.style.animation = 'none';
+                loginArea.offsetHeight; 
+                loginArea.style.animation = null;
+            }
+            if (registerArea) registerArea.style.display = 'none';
+        }
+    }
+
+    function processFacultyEnrollment() {
+        const name = document.getElementById('facName').value.trim();
+        const address = document.getElementById('facAddress').value.trim();
+        const domain = document.getElementById('facDomain').value.trim();
+        const mobile = document.getElementById('facMobile').value.trim();
+        const mail = document.getElementById('facMail').value.trim();
+        const dob = document.getElementById('facDob').value;
+        const qualifications = document.getElementById('facQuals').value.trim();
+        const achievements = document.getElementById('facAchieve').value.trim();
+        const awards = document.getElementById('facAwards').value.trim();
+        const enrollmentDate = document.getElementById('facEnrollDate').value;
+
+        if(!name || !domain || !mail || !dob || !enrollmentDate) {
+            alert("Please accurately fulfill all mandatory parameters (Name, Domain, Mail, DOB, Enrollment Date).");
+            return;
+        }
+
+        const facultyRegistry = JSON.parse(localStorage.getItem('registered_faculty')) || [];
+        const incrementalSuffix = String(facultyRegistry.length + 1001);
+        const generatedId = `PS-FAC-2026-${incrementalSuffix}`;
+
+        const newFacultyPayload = {
+            id: generatedId,
+            name: name,
+            address: address,
+            domain: domain,
+            mobile: mobile,
+            mail: mail,
+            dob: dob,
+            qualifications: qualifications,
+            achievements: achievements,
+            awards: awards,
+            enrollmentDate: enrollmentDate
+        };
+
+        facultyRegistry.push(newFacultyPayload);
+        localStorage.setItem('registered_faculty', JSON.stringify(facultyRegistry));
+        
+        alert(`Enrollment Generated Successfully!\nYour Unique Faculty ID Code is: ${generatedId}\nUse this ID and your Date of Birth to Sign in.`);
+        
+        document.getElementById('loginFacId').value = generatedId;
+        toggleAuthViews(false);
+    }
+
+    function checkFacultyLogin() {
+        const id = document.getElementById('loginFacId').value.trim();
+        const dob = document.getElementById('loginFacDob').value;
+        const facultyRegistry = JSON.parse(localStorage.getItem('registered_faculty')) || [];
+
+        const verifiedUser = facultyRegistry.find(f => f.id === id && f.dob === dob);
+
+        if (verifiedUser) {
+            activeFacultySessionObject = verifiedUser;
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('dashboardArea').style.display = 'block';
+            
+            document.getElementById('dispFacName').innerText = verifiedUser.name;
+            document.getElementById('dispFacId').innerText = verifiedUser.id;
+            document.getElementById('dispFacDomain').innerText = verifiedUser.domain;
+            document.getElementById('dispFacQuals').innerText = verifiedUser.qualifications || 'N/A';
+            document.getElementById('dispFacAchieve').innerText = verifiedUser.achievements || 'N/A';
+            document.getElementById('dispFacAwards').innerText = verifiedUser.awards || 'N/A';
+            document.getElementById('dispFacMobile').innerText = verifiedUser.mobile || 'N/A';
+            document.getElementById('dispFacMail').innerText = verifiedUser.mail;
+            document.getElementById('dispFacAddress').innerText = verifiedUser.address || 'N/A';
+
+            const systemCurrentYear = 2026;
+            const joinsYear = new Date(verifiedUser.enrollmentDate).getFullYear();
+            let performanceTenureCalculatedLength = systemCurrentYear - joinsYear;
+            if(performanceTenureCalculatedLength < 0) performanceTenureCalculatedLength = 0;
+            
+            document.getElementById('dispFacTenure').innerText = performanceTenureCalculatedLength;
+        } else {
+            alert("Verification Failed. Access Denied. Check ID Schema or Date of Birth parameters.");
+        }
+    }
+
+    async function publishJeeTestFormat() {
+        if (!activeFacultySessionObject) {
+            alert("Security Violation Context: Unverified runtime execution environment tracking error.");
+            return;
+        }
+
+        const title = document.getElementById('testTitle').value.trim();
+        const payloadData = document.getElementById('testQuestions').value.trim();
+
+        if(!title || !payloadData) {
+            alert("Cannot process blank examination frameworks. Please provide Title and Question schemas.");
+            return;
+        }
+
+        const examRegistry = JSON.parse(localStorage.getItem('faculty_published_jee_tests')) || [];
+        const newTestEntry = {
+            testId: 'JEE-TEST-' + Date.now(),
+            authorFacultyId: activeFacultySessionObject.id,
+            authorName: activeFacultySessionObject.name,
+            domain: activeFacultySessionObject.domain,
+            testTitle: title,
+            questionsData: payloadData,
+            timestamp: new Date().toISOString()
+        };
+
+        examRegistry.push(newTestEntry);
+        localStorage.setItem('faculty_published_jee_tests', JSON.stringify(examRegistry));
+
+        try {
+            await fetch("http://localhost:3000/api/publish-test", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newTestEntry)
+            });
+        } catch (error) {
+            console.warn("Backend server connection offline. Data fallback saved locally to application storage.");
+        }
+        
+        alert(`Success! Exam system records updated.\nTest Title: "${title}" published under Master Key validation ID: ${activeFacultySessionObject.id}`);
+        
+        document.getElementById('testTitle').value = '';
+        document.getElementById('testQuestions').value = '';
+    }
+    (function initBackgroundMatrix() {
+        const canvas = document.getElementById('bg-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        let particlesArray = [];
+        const numberOfParticles = 45; // Balanced density to prevent UI lag
+        
+        // Handle responsive viewport dimension adjustments
+        function setCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        setCanvasSize();
+        window.addEventListener('resize', setCanvasSize);
+
+        // Particle Object Configuration Blueprints
+        class GeometricParticle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                // Controls movement speeds across vectors
+                this.directionX = (Math.random() * 0.6) - 0.3;
+                this.directionY = (Math.random() * 0.6) - 0.3;
+                this.size = Math.random() * 2.5 + 1.5;
+            }
+            
+            // Render the floating nodes
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.23)'; // Matches cyan primary variables
+                ctx.fill();
+            }
+
+            // Update coordinate ticks and handle boundary bounces
+            update() {
+                if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+                
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        // Initialize particle array collection
+        for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new GeometricParticle());
+        }
+
+        // Calculate proximity vectors to render link paths
+        function connectNodes() {
+            let maxDistance = 160;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
+                                 + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    
+                    if (distance < maxDistance * maxDistance) {
+                        let opacity = 1 - (distance / (maxDistance * maxDistance));
+                        ctx.strokeStyle = `rgba(56, 189, 248, ${opacity * 0.12})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // Continuous Loop Animation Thread Execution Frame
+        function renderMatrixLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            connectNodes();
+            requestAnimationFrame(renderMatrixLoop);
+        }
+        renderMatrixLoop();
+    })();
+</script>
+</body>
+</html>
