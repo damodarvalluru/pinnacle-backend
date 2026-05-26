@@ -862,6 +862,169 @@
         display:none;
     }
 }
+
+.visitor-section{
+    position:relative;
+    width:100%;
+    padding:70px 20px;
+    overflow:hidden;
+    background:
+        linear-gradient(
+            135deg,
+            #050816,
+            #0b1633,
+            #101d42
+        );
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+
+.visitor-overlay{
+    position:absolute;
+    width:180%;
+    height:180%;
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,140,255,0.10),
+            transparent 65%
+        );
+    animation:rotateBg 18s linear infinite;
+}
+
+@keyframes rotateBg{
+    from{
+        transform:rotate(0deg);
+    }
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.visitor-content{
+    position:relative;
+    z-index:2;
+    max-width:600px;
+}
+
+.visitor-title{
+    font-size:2.2rem;
+    font-weight:700;
+    color:#ffffff;
+    margin-bottom:12px;
+    animation:fadeUp 1s ease;
+}
+
+.visitor-subtitle{
+    color:#c7d4ff;
+    font-size:1rem;
+    margin-bottom:35px;
+    animation:fadeUp 1.2s ease;
+}
+
+.visitor-counter-box{
+    position:relative;
+    width:220px;
+    height:220px;
+    margin:auto;
+    border-radius:50%;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,0.08),
+            rgba(255,255,255,0.02)
+        );
+    backdrop-filter:blur(15px);
+    border:
+        2px solid rgba(255,255,255,0.08);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    box-shadow:
+        0 0 30px rgba(0,140,255,0.20);
+    overflow:hidden;
+    animation:floatBox 4s ease-in-out infinite;
+}
+
+@keyframes floatBox{
+    0%,100%{
+        transform:translateY(0px);
+    }
+    50%{
+        transform:translateY(-8px);
+    }
+}
+
+.pulse-ring{
+    position:absolute;
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    border:2px solid rgba(0,140,255,0.35);
+    animation:pulse 2.2s infinite;
+}
+
+@keyframes pulse{
+    0%{
+        transform:scale(1);
+        opacity:1;
+    }
+    100%{
+        transform:scale(1.18);
+        opacity:0;
+    }
+}
+
+#visitor-count{
+    font-size:3.2rem;
+    color:#00bfff;
+    margin-bottom:8px;
+    font-weight:800;
+    text-shadow:
+        0 0 15px rgba(0,191,255,0.5);
+}
+
+.visitor-counter-box span{
+    color:white;
+    font-size:1rem;
+    letter-spacing:1px;
+}
+
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(25px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@media(max-width:768px){
+
+    .visitor-section{
+        padding:55px 15px;
+    }
+
+    .visitor-title{
+        font-size:1.8rem;
+    }
+
+    .visitor-counter-box{
+        width:180px;
+        height:180px;
+    }
+
+    #visitor-count{
+        font-size:2.6rem;
+    }
+
+}
+
     </style>
 </head>
 <body>
@@ -1133,6 +1296,34 @@
     <button class="portal-btn" onclick="navigateTo('student')">Student Login</button>&nbsp;&nbsp;&nbsp;
     <button class="portal-btn" style="background: var(--secondary);" onclick="navigateTo('faculty')">Faculty Login</button>&nbsp;&nbsp;&nbsp;
     <button class="portal-btn" style="background: var(--accent);" onclick="navigateTo('results')">Check Results</button>
+</section>
+
+<section class="visitor-section">
+
+    <div class="visitor-overlay"></div>
+
+    <div class="visitor-content">
+
+        <h2 class="visitor-title">
+            Our Growing Community
+        </h2>
+
+        <p class="visitor-subtitle">
+            Thank you for being a part of Pinnacle Scholars Academy
+        </p>
+
+        <div class="visitor-counter-box">
+
+            <div class="pulse-ring"></div>
+
+            <h1 id="visitor-count">0</h1>
+
+            <span>Total Visitors</span>
+
+        </div>
+
+    </div>
+
 </section>
 
 <footer>
@@ -2675,6 +2866,88 @@ function downloadBrochure() {
 
     modal.style.display = 'flex';
 }
+
+async function updateVisitorCount(){
+
+    try{
+
+        const response =
+            await fetch(
+                "https://api.countapi.xyz/hit/pinnacle-scholars-academy/visitors"
+            );
+
+        const data = await response.json();
+
+        animateCounter(data.value);
+
+    }
+    catch(error){
+
+        console.log(
+            "Visitor counter error:",
+            error
+        );
+
+    }
+
+}
+
+async function updateVisitorCount(){
+
+    try{
+
+        const response =
+            await fetch(
+                "https://api.countapi.xyz/hit/pinnacle-scholars-academy/visitors"
+            );
+
+        const data = await response.json();
+
+        animateCounter(data.value);
+
+    }
+    catch(error){
+
+        console.log(
+            "Visitor counter error:",
+            error
+        );
+
+    }
+
+}
+
+function animateCounter(target){
+
+    const counter =
+        document.getElementById("visitor-count");
+
+    let count = 0;
+
+    const increment =
+        Math.ceil(target / 100);
+
+    const timer =
+        setInterval(()=>{
+
+            count += increment;
+
+            if(count >= target){
+
+                count = target;
+
+                clearInterval(timer);
+
+            }
+
+            counter.innerText =
+                count.toLocaleString();
+
+        },20);
+
+}
+
+updateVisitorCount();
 
         function navigateTo(target) {
         if (target === 'student') window.location.href = 'student-portal.html'; 
