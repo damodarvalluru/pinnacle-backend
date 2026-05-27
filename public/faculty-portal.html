@@ -445,7 +445,7 @@
         localStorage.setItem('faculty_published_jee_tests', JSON.stringify(examRegistry));
 
         try {
-            await fetch("http://localhost:3000/api/publish-test", {
+            await fetch("https://pinnacle-backend-5i7n.onrender.com/api/publish-test", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

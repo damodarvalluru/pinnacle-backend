@@ -495,7 +495,7 @@ async function processRazorpayPayment(
 
         const response =
         await fetch(
-            'http://localhost:3000/api/create-order',
+            'https://pinnacle-backend-5i7n.onrender.com/api/create-order',
             {
                 method:'POST',
 
@@ -525,7 +525,7 @@ async function processRazorpayPayment(
 
         const options = {
 
-            key:"rzp_test_SpphA7vU94jKsy",
+            key:"rzp_live_Su10APgukCxwdi",
 
             amount:orderData.amount,
 

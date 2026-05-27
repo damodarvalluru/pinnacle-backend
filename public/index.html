@@ -2036,7 +2036,7 @@ async function startTest(domain) {
             // ELIGIBILITY CHECK
 
             const eligibilityResponse = await fetch(
-                `http://localhost:3000/api/student-eligible-test/${studentId}`
+                `https://pinnacle-backend-5i7n.onrender.com/api/student-eligible-test/${studentId}`
             );
 
             if(!eligibilityResponse.ok){
@@ -2063,7 +2063,7 @@ async function startTest(domain) {
             // FETCH TEST
 
             const response = await fetch(
-                `http://localhost:3000/api/tests/${domain}`
+                `https://pinnacle-backend-5i7n.onrender.com/api/tests/${domain}`
             );
 
             if(!response.ok){
@@ -2418,7 +2418,7 @@ localStorage.setItem(
 // BACKEND SAVE
 
 fetch(
-    "http://localhost:3000/api/submit-result",
+    "https://pinnacle-backend-5i7n.onrender.com/api/submit-result",
     {
         method:"POST",
         headers:{

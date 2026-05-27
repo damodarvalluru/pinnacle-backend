@@ -493,7 +493,7 @@ button:hover{
         activeSessionUserObject = user;
 
         // FETCH LIVE FEES FROM DATABASE
-fetch('http://localhost:3000/api/get-student-fees', {
+fetch('https://pinnacle-backend-5i7n.onrender.com/api/get-student-fees', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'
@@ -643,7 +643,7 @@ fetch('http://localhost:3000/api/get-student-fees', {
 
         const calculatedPaiseUnits = Math.round(outstandingLiabilityAmount * 100);
 
-        fetch('http://localhost:3000/api/create-order', {
+        fetch('https://pinnacle-backend-5i7n.onrender.com/api/create-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -665,7 +665,7 @@ fetch('http://localhost:3000/api/get-student-fees', {
                 "description": "Student Dashboard Balance Tuition Settlement",
                 "order_id": orderPayload.order_id,
                 "handler": function (paymentVerificationData) {
-                    fetch('http://localhost:3000/api/verify-payment', {
+                    fetch('https://pinnacle-backend-5i7n.onrender.com/api/verify-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
