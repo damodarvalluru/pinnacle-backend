@@ -4,6 +4,10 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const path = require('path');
 const cors = require('cors');
+const studentRoutes = require('./routes/studentRoutes');
+const facultyRoutes = require('./routes/facultyRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const testRoutes = require('./routes/testRoutes');
 const cron = require('node-cron');
 const twilio = require('twilio');
 const { v4: uuidv4 } = require('uuid');
@@ -342,6 +346,10 @@ function initializeCronJobs() {
 initializeCronJobs();
 
 const TARGET_BINDING_PORT = process.env.PORT || 3000;
+app.use('/api/students', studentRoutes);
+app.use('/api/faculty', facultyRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/tests', testRoutes);
 app.listen(TARGET_BINDING_PORT, () => {
     console.log(`====================================================================`);
     console.log(`    PINNACLE ACADEMY PAYMENT PROCESSING BACKEND ENGINE ACTIVE       `);
