@@ -27,14 +27,25 @@
         }
         
         [data-theme="light"]{
-            --grad-start:#2fbfe0;
-            --grad-end:#dc47c6;
-            --text-main:#50e615;
-            --card-bg:rgba(149, 196, 206, 0.88);
-            --glass:rgba(234, 153, 66, 0.6);
-            --border:rgba(15,23,42,0.08);
-            --watermark-color:rgba(19, 19, 17, 0.04);
-        }
+    --primary:#ffffff;
+    --secondary:#2563eb;
+    --accent:#f59e0b;
+
+    --grad-start:#f4f7fb;
+    --grad-end:#e9eef7;
+
+    --text-main:#0f172a;
+
+    --card-bg:rgba(255,255,255,0.92);
+
+    --glass:rgba(255,255,255,0.7);
+
+    --border:rgba(15,23,42,0.08);
+
+    --shadow:0 10px 35px rgba(0,0,0,.08);
+
+    --watermark-color:rgba(15,23,42,.035);
+}
         
         *{
             margin:0;
@@ -53,6 +64,54 @@
             line-height:1.7;
         }
         
+        [data-theme="light"] body{
+    background:
+        radial-gradient(circle at top left,#dbeafe 0%,transparent 28%),
+        radial-gradient(circle at bottom right,#ede9fe 0%,transparent 24%),
+        linear-gradient(
+            135deg,
+            var(--grad-start),
+            var(--grad-end)
+        );
+
+    color:#0f172a;
+}
+
+        [data-theme="light"] header{
+    background:rgba(255,255,255,.85);
+    border-bottom:1px solid rgba(15,23,42,.08);
+    box-shadow:0 8px 25px rgba(0,0,0,.06);
+}
+
+[data-theme="light"] .nav-links a{
+    color:#0f172a;
+}
+
+[data-theme="light"] .nav-links a:hover{
+    color:#2563eb;
+}
+
+[data-theme="light"] .hero{
+    background:
+        linear-gradient(
+            rgba(255,255,255,.82),
+            rgba(255,255,255,.88)
+        ),
+        url('https://images.unsplash.com/photo-1523050335392-9ae86774929f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+
+    background-size:cover;
+    background-position:center;
+}
+
+[data-theme="light"] .hero h1{
+    color:#0f172a;
+    text-shadow:none;
+}
+
+[data-theme="light"] .hero p{
+    color:#334155;
+}
+
         /* FIX: Isolated Watermark with 100% transparent click-through protection */
         body::before{
             content:"PINNACLE ACADEMY";
@@ -445,7 +504,8 @@
             -webkit-text-fill-color:transparent;
         }
         
-        [data-theme="light"] section h2{-webkit-text-fill-color:initial;color:#0c0c0c;background:none}
+        [data-theme="light"] section h2{color:#0f172a;background:none;-webkit-text-fill-color:#0f172a;}
+
         section h2::after{
             content:"";
             position:absolute;
@@ -482,8 +542,69 @@
         .card h3{font-size:1.35rem;margin-bottom:12px;color:#fff}
         
         .card p,.card li{color:#dbeafe}
-        [data-theme="light"] .card h3,[data-theme="light"] .card p,[data-theme="light"] .card li{color:#0f172a}
         
+        [data-theme="light"] .card h3{
+    color:#0f172a;
+}
+
+[data-theme="light"] .card p,
+[data-theme="light"] .card li{
+    color:#334155;
+    font-size:1rem;
+    line-height:1.8;
+}
+        
+    [data-theme="light"] .card{
+    background:rgba(255,255,255,.95);
+    border:1px solid rgba(15,23,42,.06);
+
+    box-shadow:
+        0 10px 30px rgba(15,23,42,.08);
+
+    backdrop-filter:blur(12px);
+}
+
+[data-theme="light"] .notice-ticker-container{
+    background:rgba(255,255,255,.8);
+}
+
+[data-theme="light"] .ticker-item{
+    color:#1e293b;
+}
+
+[data-theme="light"] .ticker-link{
+    color:#2563eb;
+    border-bottom:1px dashed #2563eb;
+}
+[data-theme="light"] footer{
+    background:#ffffff;
+    color:#334155;
+    border-top:1px solid rgba(15,23,42,.08);
+}
+[data-theme="light"] .cta-btn,
+[data-theme="light"] .portal-btn{
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    color:#ffffff;
+}
+
+[data-theme="light"] .theme-toggle-btn{
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+}
+[data-theme="light"] p,
+[data-theme="light"] li{
+    font-weight:500;
+    letter-spacing:.2px;
+}
+
         ul{padding-left:18px}
         
         li{margin-bottom:10px}
