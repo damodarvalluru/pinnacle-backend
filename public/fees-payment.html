@@ -477,182 +477,166 @@ function continuePayment(){
     );
 }
 
-async function processRazorpayPayment(
-    amountInINR,
-    studentDetails = {}
-) {
-
+async function processRazorpayPayment(amountInINR, studentDetails = {}) {
     try {
-
         if (!amountInINR || amountInINR < 1) {
-
             alert("Payment amount must be at least ₹1");
             return;
         }
-
-        const targetAmountPaise =
-        Math.round(amountInINR * 100);
-
-        const response =
-        await fetch(
-            'https://pinnacle-backend-5i7n.onrender.com/api/create-order',
-            {
-                method:'POST',
-
-                headers:{
-                    'Content-Type':'application/json'
-                },
-
-                body:JSON.stringify({
-
-                    amount:targetAmountPaise,
-
-                    currency:'INR',
-
-                    receipt:'receipt_'+Date.now()
-                })
-            }
-        );
-
-        if(!response.ok){
-
-            alert("Unable To Create Order");
-            return;
+        const targetAmountPaise = Math.round(amountInINR * 100);
+        console.log("Creating Razorpay Order...");
+        console.log("Sending Request To Backend...");
+        const response = await fetch('https://pinnacle-backend-5i7n.onrender.com/api/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: targetAmountPaise,
+                currency: 'INR',
+                receipt: 'receipt_' + Date.now()
+            })
+        });
+        console.log("Response Status:", response.status);
+        console.log("Response OK:", response.ok);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.log("Server Error:", errorText);
+            throw new Error("Backend server responded with error");
         }
-
-        const orderData =
-        await response.json();
-
+        const orderData = await response.json();
+        console.log("full backedn response:", orderData);
         const options = {
+            key: "rzp_live_Su10APgukCxwdi",
+            amount: orderData.amount,
+            currency: orderData.currency,
+            name: "Pinnacle Scholars Academy",
+            description: "Educational Fee Payment",
+            order_id: orderData.order_id,
+            handler: async function (paymentReceipt) {
+                try {
+                    const verificationResponse = await fetch('https://pinnacle-backend-5i7n.onrender.com/api/verify-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                       body: JSON.stringify({
 
-            key:"rzp_live_Su10APgukCxwdi",
+    razorpay_order_id:
+        paymentReceipt.razorpay_order_id,
 
-            amount:orderData.amount,
+    razorpay_payment_id:
+        paymentReceipt.razorpay_payment_id,
 
-            currency:orderData.currency,
+    razorpay_signature:
+        paymentReceipt.razorpay_signature,
 
-            name:"Pinnacle Scholars Academy",
+    student_id:
+        studentDetails.student_id,
 
-            description:"Student Fee Payment",
+    payment_type:
+        studentDetails.payment_type,
 
-            order_id:orderData.order_id,
+    paid_amount:
+        amountInINR
 
-            handler:async function(paymentReceipt){
+})
+                    });
+                    const verificationResult = await verificationResponse.json();
+                    console.log("Verification Result:", verificationResult);
+                    if (verificationResult.success) {
 
-                try{
+    // UPDATE LOCAL STORAGE
 
-                    // LOCAL STORAGE UPDATE
+    const students =
+        JSON.parse(
+            localStorage.getItem('registered_students')
+        ) || [];
 
-                    const students =
-                    JSON.parse(
-                        localStorage.getItem(
-                            'registered_students'
-                        )
-                    ) || [];
+    const studentIndex = students.findIndex(
+        s => s.id === studentDetails.student_id
+    );
 
-                    const studentIndex =
-                    students.findIndex(
-                        s =>
-                        s.id ===
-                        studentDetails.student_id
-                    );
+    if (studentIndex !== -1) {
 
-                    if(studentIndex !== -1){
+        const oldPaid =
+            parseFloat(
+                students[studentIndex].feesPaid
+            ) || 0;
 
-                        students[studentIndex].feesPaid =
-                        (
-                            parseFloat(
-                                students[studentIndex].feesPaid
-                            ) || 0
-                        )
-                        +
-                        parseFloat(amountInINR);
+        const totalFees =
+            parseFloat(
+                students[studentIndex].totalFees
+            ) || 50000;
 
-                        students[studentIndex].remainingFees =
-                        (
-                            parseFloat(
-                                students[studentIndex].totalFees
-                            )
-                        )
-                        -
-                        (
-                            parseFloat(
-                                students[studentIndex].feesPaid
-                            )
-                        );
+        const newPaid =
+            oldPaid + amountInINR;
 
-                        localStorage.setItem(
-                            'registered_students',
-                            JSON.stringify(students)
-                        );
+        const remaining =
+            totalFees - newPaid;
+
+        students[studentIndex].feesPaid =
+            newPaid;
+
+        students[studentIndex].remainingFees =
+            remaining;
+
+        localStorage.setItem(
+            'registered_students',
+            JSON.stringify(students)
+        );
+    }
+
+    alert(
+
+"Payment Successful!\n\n" +
+
+"Payment ID: " +
+paymentReceipt.razorpay_payment_id +
+
+"\n\nPaid Amount: ₹" +
+amountInINR +
+
+"\n\nRemaining Fees: ₹" +
+remaining
+);
+
+}
+                    else {
+                        alert("Payment verification failed");
                     }
-
-                    alert(
-
-`Payment Successful!
-
-Payment ID:
-${paymentReceipt.razorpay_payment_id}
-
-Remaining Fees:
-₹${students[studentIndex].remainingFees}`
-                    );
-
-                    location.reload();
-
-                }catch(err){
-
-                    console.log(err);
-
-                    alert(
-                        "Payment Success But Storage Update Failed"
-                    );
+                } catch (verificationError) {
+                    console.log("Verification Error:", verificationError);
+                    alert("Payment verification server error");
                 }
             },
-
-            prefill:{
-
-                name:
-                studentDetails.name || "Student",
-
-                email:
-                studentDetails.email ||
-                "student@example.com",
-
-                contact:
-                studentDetails.contact ||
-                "9999999999"
+            prefill: {
+                name: studentDetails.name || "Student",
+                email: studentDetails.email || "student@example.com",
+                contact: studentDetails.contact || "9999999999"
             },
-
-            theme:{
-                color:"#0ea5e9"
+            theme: {
+                color: "#1a365d"
+            },
+            modal: {
+                ondismiss: function () {
+                    console.log("Payment popup closed");
+                }
             }
         };
-
-        const razorpayWindow =
-        new Razorpay(options);
-
-        razorpayWindow.on(
-            'payment.failed',
-
-            function(response){
-
-                alert(
-                    "Payment Failed\n\n"+
-                    response.error.description
-                );
-            }
-        );
-
+        const razorpayWindow = new Razorpay(options);
+        razorpayWindow.on('payment.failed', function (response) {
+            console.log("Payment Failed:", response);
+            alert(
+                "Payment Failed\n" +
+                response.error.description
+            );
+        });
         razorpayWindow.open();
-
-    } catch(error){
-
-        console.log(error);
-
+    } catch (error) {
+        console.log("FULL PAYMENT ERROR:", error);
         alert(
-            "Payment Initialization Failed"
-        );
+            "Backend connection failed.\n\n" + "Check:\n" + "1. Node server running\n" + "2. Port 3000 active\n" + "3. CORS enabled\n" + "4. API route exists");
     }
 }
 </script>

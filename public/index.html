@@ -27,13 +27,13 @@
         }
         
         [data-theme="light"]{
-            --grad-start:#eef2ff;
-            --grad-end:#f8fafc;
-            --text-main:#0f172a;
-            --card-bg:rgba(255,255,255,0.88);
-            --glass:rgba(255,255,255,0.6);
+            --grad-start:#2fbfe0;
+            --grad-end:#dc47c6;
+            --text-main:#50e615;
+            --card-bg:rgba(149, 196, 206, 0.88);
+            --glass:rgba(234, 153, 66, 0.6);
             --border:rgba(15,23,42,0.08);
-            --watermark-color:rgba(15,23,42,.04);
+            --watermark-color:rgba(19, 19, 17, 0.04);
         }
         
         *{
@@ -184,8 +184,11 @@
         }
         
         .star-1{left:15%;animation-duration:2.5s}
+        
         .star-2{left:45%;animation-duration:3.1s;animation-delay:.6s;background:#38bdf8}
+        
         .star-3{left:72%;animation-duration:2.8s;animation-delay:1.2s}
+        
         .star-4{left:88%;animation-duration:3.5s;animation-delay:.3s;background:#fde047}
         
         @keyframes starDropFall{
@@ -420,9 +423,11 @@
         }
         
         .hero-brochure-core .icon{font-size:2.2rem;margin-bottom:8px;}
+        
         .hero-brochure-core .title{font-size:.78rem;font-weight:800;line-height:1.4;letter-spacing:1px;color:#fff;}
         
         @keyframes rotateOrb{100%{transform:rotate(360deg)}}
+        
         @keyframes floatOrb{
             0%,100%{transform:translateY(-50%) translateY(0)}
             50%{transform:translateY(-50%) translateY(-14px)}
@@ -440,7 +445,7 @@
             -webkit-text-fill-color:transparent;
         }
         
-        [data-theme="light"] section h2{-webkit-text-fill-color:initial;color:#0f172a;background:none}
+        [data-theme="light"] section h2{-webkit-text-fill-color:initial;color:#0c0c0c;background:none}
         section h2::after{
             content:"";
             position:absolute;
@@ -467,17 +472,28 @@
         }
         
         .card::before{content:"";position:absolute;top:0;left:0;width:100%;height:5px;background:linear-gradient(90deg,var(--accent),#38bdf8,#8b5cf6)}
+        
         .card::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);opacity:0;transition:.4s ease}
+        
         .card:hover{transform:translateY(-12px) rotateX(2deg) scale(1.01);box-shadow:0 25px 60px rgba(0,0,0,.38)}
+        
         .card:hover::after{opacity:1}
+        
         .card h3{font-size:1.35rem;margin-bottom:12px;color:#fff}
+        
         .card p,.card li{color:#dbeafe}
         [data-theme="light"] .card h3,[data-theme="light"] .card p,[data-theme="light"] .card li{color:#0f172a}
+        
         ul{padding-left:18px}
+        
         li{margin-bottom:10px}
+        
         #overview{text-align:center;padding-bottom:40px}
+        
         #overview p{max-width:980px;margin:auto}
+        
         .portal-links{text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+        
         footer{text-align:center;padding:30px 20px;background:rgba(2,6,23,.82);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.08);font-size:.95rem;color:#cbd5e1}
         
         .nav-scroll-btn{
