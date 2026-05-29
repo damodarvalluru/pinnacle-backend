@@ -80,4 +80,49 @@ router.post('/register', async (req, res) => {
     }
 });
 
+/*
+FACULTY LOGIN
+*/
+
+router.post('/login', async (req, res) => {
+
+    try {
+
+        const { faculty_id, dob } = req.body;
+
+        const [rows] = await pool.query(
+
+            `SELECT * FROM faculty
+             WHERE faculty_id = ?
+             AND dob = ?`,
+
+            [faculty_id, dob]
+        );
+
+        if (rows.length > 0) {
+
+            res.json({
+                success: true,
+                faculty: rows[0]
+            });
+
+        } else {
+
+            res.json({
+                success: false,
+                message: 'Invalid Faculty ID or DOB'
+            });
+        }
+
+    } catch (error) {
+
+        console.log('Faculty Login Error:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error'
+        });
+    }
+});
+
 module.exports = router;

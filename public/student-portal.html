@@ -643,7 +643,7 @@ fetch('https://pinnacle-backend-5i7n.onrender.com/api/get-student-fees', {
 
         const calculatedPaiseUnits = Math.round(outstandingLiabilityAmount * 100);
 
-        fetch('https://pinnacle-backend-5i7n.onrender.com/api/create-order', {
+        fetch('https://pinnacle-backend-5i7n.onrender.com/api/payments/create-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -665,7 +665,7 @@ fetch('https://pinnacle-backend-5i7n.onrender.com/api/get-student-fees', {
                 "description": "Student Dashboard Balance Tuition Settlement",
                 "order_id": orderPayload.order_id,
                 "handler": function (paymentVerificationData) {
-                    fetch('https://pinnacle-backend-5i7n.onrender.com/api/verify-payment', {
+                    fetch('https://pinnacle-backend-5i7n.onrender.com/api/payments/verify-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

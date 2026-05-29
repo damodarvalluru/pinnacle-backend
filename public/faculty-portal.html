@@ -356,66 +356,146 @@
             return;
         }
 
-        const facultyRegistry = JSON.parse(localStorage.getItem('registered_faculty')) || [];
-        const incrementalSuffix = String(facultyRegistry.length + 1001);
-        const generatedId = `PS-FAC-2026-${incrementalSuffix}`;
+        try {
 
-        const newFacultyPayload = {
-            id: generatedId,
-            name: name,
-            address: address,
-            domain: domain,
-            mobile: mobile,
-            mail: mail,
-            dob: dob,
-            qualifications: qualifications,
-            achievements: achievements,
-            awards: awards,
-            enrollmentDate: enrollmentDate
-        };
-
-        facultyRegistry.push(newFacultyPayload);
-        localStorage.setItem('registered_faculty', JSON.stringify(facultyRegistry));
-        
-        alert(`Enrollment Generated Successfully!\nYour Unique Faculty ID Code is: ${generatedId}\nUse this ID and your Date of Birth to Sign in.`);
-        
-        document.getElementById('loginFacId').value = generatedId;
-        toggleAuthViews(false);
-    }
-
-    function checkFacultyLogin() {
-        const id = document.getElementById('loginFacId').value.trim();
-        const dob = document.getElementById('loginFacDob').value;
-        const facultyRegistry = JSON.parse(localStorage.getItem('registered_faculty')) || [];
-
-        const verifiedUser = facultyRegistry.find(f => f.id === id && f.dob === dob);
-
-        if (verifiedUser) {
-            activeFacultySessionObject = verifiedUser;
-            document.getElementById('authContainer').style.display = 'none';
-            document.getElementById('dashboardArea').style.display = 'block';
-            
-            document.getElementById('dispFacName').innerText = verifiedUser.name;
-            document.getElementById('dispFacId').innerText = verifiedUser.id;
-            document.getElementById('dispFacDomain').innerText = verifiedUser.domain;
-            document.getElementById('dispFacQuals').innerText = verifiedUser.qualifications || 'N/A';
-            document.getElementById('dispFacAchieve').innerText = verifiedUser.achievements || 'N/A';
-            document.getElementById('dispFacAwards').innerText = verifiedUser.awards || 'N/A';
-            document.getElementById('dispFacMobile').innerText = verifiedUser.mobile || 'N/A';
-            document.getElementById('dispFacMail').innerText = verifiedUser.mail;
-            document.getElementById('dispFacAddress').innerText = verifiedUser.address || 'N/A';
-
-            const systemCurrentYear = 2026;
-            const joinsYear = new Date(verifiedUser.enrollmentDate).getFullYear();
-            let performanceTenureCalculatedLength = systemCurrentYear - joinsYear;
-            if(performanceTenureCalculatedLength < 0) performanceTenureCalculatedLength = 0;
-            
-            document.getElementById('dispFacTenure').innerText = performanceTenureCalculatedLength;
-        } else {
-            alert("Verification Failed. Access Denied. Check ID Schema or Date of Birth parameters.");
+    const response = await fetch(
+        "https://pinnacle-backend-5i7n.onrender.com/api/faculty/register",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name,
+                address,
+                domain,
+                mobile,
+                mail,
+                dob,
+                qualifications,
+                achievements,
+                awards,
+                enrollmentDate
+            })
         }
+    );
+
+    let data;
+
+try{
+    data = await response.json();
+}catch{
+    throw new Error("Invalid backend response");
+}
+
+    if(data.success){
+
+        alert(
+            `Enrollment Successful!\nFaculty ID: ${data.faculty.id}`
+        );
+
+        document.getElementById('loginFacId').value =
+        data.faculty.id;
+
+        toggleAuthViews(false);
+
+    } else {
+
+        alert(data.message || "Registration failed");
     }
 
+} catch(error){
+
+    console.log(error);
+
+    alert("Backend connection failed");
+}
+    }
+
+    async function checkFacultyLogin() {
+
+    const id =
+    document.getElementById('loginFacId').value.trim();
+
+    const dob =
+    document.getElementById('loginFacDob').value;
+
+    try {
+
+        const response = await fetch(
+            "https://pinnacle-backend-5i7n.onrender.com/api/faculty/login",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    id,
+                    dob
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if(data.success){
+
+            const verifiedUser = data.faculty;
+
+            activeFacultySessionObject =
+            verifiedUser;
+
+            document.getElementById('authContainer')
+            .style.display='none';
+
+            document.getElementById('dashboardArea')
+            .style.display='block';
+
+            document.getElementById('dispFacName')
+            .innerText = verifiedUser.name;
+
+            document.getElementById('dispFacId')
+            .innerText = verifiedUser.id;
+
+            document.getElementById('dispFacDomain')
+            .innerText = verifiedUser.domain;
+
+            document.getElementById('dispFacQuals')
+            .innerText =
+            verifiedUser.qualifications || 'N/A';
+
+            document.getElementById('dispFacAchieve')
+            .innerText =
+            verifiedUser.achievements || 'N/A';
+
+            document.getElementById('dispFacAwards')
+            .innerText =
+            verifiedUser.awards || 'N/A';
+
+            document.getElementById('dispFacMobile')
+            .innerText =
+            verifiedUser.mobile || 'N/A';
+
+            document.getElementById('dispFacMail')
+            .innerText =
+            verifiedUser.mail;
+
+            document.getElementById('dispFacAddress')
+            .innerText =
+            verifiedUser.address || 'N/A';
+
+        } else {
+
+            alert(data.message || "Login failed");
+        }
+
+    } catch(error){
+
+        console.log(error);
+
+        alert("Backend server error");
+    }
+}
     async function publishJeeTestFormat() {
         if (!activeFacultySessionObject) {
             alert("Security Violation Context: Unverified runtime execution environment tracking error.");
@@ -429,22 +509,7 @@
             alert("Cannot process blank examination frameworks. Please provide Title and Question schemas.");
             return;
         }
-
-        const examRegistry = JSON.parse(localStorage.getItem('faculty_published_jee_tests')) || [];
-        const newTestEntry = {
-            testId: 'JEE-TEST-' + Date.now(),
-            authorFacultyId: activeFacultySessionObject.id,
-            authorName: activeFacultySessionObject.name,
-            domain: activeFacultySessionObject.domain,
-            testTitle: title,
-            questionsData: payloadData,
-            timestamp: new Date().toISOString()
-        };
-
-        examRegistry.push(newTestEntry);
-        localStorage.setItem('faculty_published_jee_tests', JSON.stringify(examRegistry));
-
-        try {
+            try {
             await fetch("https://pinnacle-backend-5i7n.onrender.com/api/tests/publish-test", {
                 method: "POST",
                 headers: {
