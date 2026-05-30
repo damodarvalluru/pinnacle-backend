@@ -202,6 +202,11 @@ footer p {
             transform: translateY(0);
         }
 
+        .btn-submit:disabled{
+    opacity:0.7;
+    cursor:not-allowed;
+}
+
         .nav-footer {
             text-align: center;
             margin-top: 25px;
@@ -502,16 +507,19 @@ document.getElementById('enrollBtn');
 btn.disabled = true;
 
 btn.innerText = "Processing...";
+const controller = new AbortController();
 
+const timeoutId = setTimeout(() => {
+    controller.abort();
+}, 15000);
     try {
-
-        const response = await fetch(
+                const response = await fetch(
             "https://pinnacle-backend-5i7n.onrender.com/api/students/register",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
-                },
+                },    signal: controller.signal,
                 body: JSON.stringify({
                     name: studentName,
                     dob,
@@ -519,36 +527,63 @@ btn.innerText = "Processing...";
                 })
             }
         );
+clearTimeout(timeoutId);
+        
+let data = await response.json();
 
-        const data = await response.json();
+console.log("Backend Response:", data);
 
-        if(data.success){
 btn.disabled = false;
-
 btn.innerText = "Complete Enrollment";
 
-            document.getElementById('newId')
-            .innerText =
-            data.student.id;
+if (data.success  && data.student) {
 
-            document.getElementById(
-                'enrollFormContainer'
-            ).style.display='none';
+    document.getElementById('newId').innerText =
+        data.student.student_id
 
-            document.getElementById(
-                'successBox'
-            ).style.display='block';           
-        } else {
+    document.getElementById(
+        'enrollFormContainer'
+    ).style.display = 'none';
 
-            alert(data.message || "Enrollment failed");
-        }
+    document.getElementById(
+        'successBox'
+    ).style.display = 'block';
 
-    } catch(error){
+    document.getElementById('studentName').value = "";
+    document.getElementById('dob').value = "";
+    document.getElementById('domain').selectedIndex = 0;
+
+} else {
+
+    alert(data.message || "Enrollment failed");
+}
+      } catch(error){
         btn.disabled = false;
         btn.innerText = "Complete Enrollment";
         console.log(error);
-        alert("Backend server error");
+        if(error.name === "AbortError"){
+
+    alert(
+        "Server timeout.\n\nRailway backend is waking up."
+    );
+
+}else if(!navigator.onLine){
+
+    alert(
+        "No internet connection detected."
+    );
+
+}else{
+
+    alert(
+        "Backend server error."
+    );
+}
     }
+    finally {
+
+    clearTimeout(timeoutId);
+}
 }
 </script>
 </body>

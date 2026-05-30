@@ -295,7 +295,7 @@ for(let i=0;i<40;i++){
     </div>
 
     <button
-        class="fetch-btn"
+        class="fetch-btn" id="fetchBtn"
         onclick="fetchStudentDetails()"
     >
         Fetch Details
@@ -364,20 +364,39 @@ async function fetchStudentDetails(){
     document.getElementById('studentId')
     .value.trim();
 
-if(!studentId){
+    const fetchBtn =
+document.getElementById('fetchBtn');
 
+fetchBtn.disabled = true;
+
+fetchBtn.innerText = "Fetching...";
+
+if(!studentId){
+    fetchBtn.disabled = false;
+
+fetchBtn.innerText = "Fetch Details";
     alert("Enter Student ID");
     return;
 }
 
-    try {
+try {
 
-        const response = await fetch(
-            `https://pinnacle-backend-5i7n.onrender.com/api/students/${studentId}`
-        );
+    const controller = new AbortController();
 
-        let data;
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+    }, 15000);
 
+    const response = await fetch(
+        `https://pinnacle-backend-5i7n.onrender.com/api/students/${studentId}`,
+        {
+            signal: controller.signal
+        }
+    );
+
+    clearTimeout(timeoutId);
+
+          let data;
 try{
     data = await response.json();
 }catch{
@@ -385,7 +404,9 @@ try{
 }
 
         if(!data.success){
+            fetchBtn.disabled = false;
 
+fetchBtn.innerText = "Fetch Details";
             alert("Student Not Found");
             return;
         }
@@ -401,7 +422,7 @@ try{
         parseFloat(student.feesPaid) || 0;
 
         const remainingFees =
-        totalFees - paidFees;
+Math.max(0, totalFees - paidFees);
 
         document.getElementById('sName')
         .innerText = student.name;
@@ -420,12 +441,25 @@ try{
 
         document.getElementById('studentDetails')
         .style.display='block';
+        
+        fetchBtn.disabled = false;
+
+fetchBtn.innerText = "Fetch Details";
 
     } catch(error){
+        fetchBtn.disabled = false;
 
+fetchBtn.innerText = "Fetch Details";
         console.log(error);
 
-        alert("Backend error");
+        if(error.name === "AbortError"){
+
+    alert("Server timeout. Railway backend took too long.");
+
+} else {
+
+    alert("Backend error");
+}
     }
 }
 
@@ -463,8 +497,18 @@ payBtn.innerText = "Processing...";
     const paidFees=
     parseFloat(currentStudent.feesPaid)||0;
 
-    const remainingFees=
-    totalFees-paidFees;
+    const remainingFees =
+Math.max(0, totalFees - paidFees);
+if (remainingFees <= 0) {
+
+    payBtn.disabled = false;
+
+    payBtn.innerText = "Continue Payment";
+
+    alert("Fees already fully paid");
+
+    return;
+}
 
     let amountToPay=remainingFees;
 
@@ -504,19 +548,27 @@ payBtn.innerText = "Continue Payment";
 }
 
 async function processRazorpayPayment(amountInINR, studentDetails = {}) {
+    const payBtn = document.getElementById('payBtn');
     try {
         if (!amountInINR || amountInINR < 1) {
+            payBtn.disabled = false;
+            payBtn.innerText = "Continue Payment";
             alert("Payment amount must be at least ₹1");
             return;
         }
         const targetAmountPaise = Math.round(amountInINR * 100);
         console.log("Creating Razorpay Order...");
         console.log("Sending Request To Backend...");
+        const controller = new AbortController();
+
+const timeoutId = setTimeout(() => {
+    controller.abort();
+}, 15000);
         const response = await fetch('https://pinnacle-backend-5i7n.onrender.com/api/payments/create-order', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            },
+            },signal: controller.signal,
             body: JSON.stringify({
                 amount: targetAmountPaise,
                 currency: 'INR',
@@ -530,8 +582,9 @@ async function processRazorpayPayment(amountInINR, studentDetails = {}) {
             console.log("Server Error:", errorText);
             throw new Error("Backend server responded with error");
         }
+        clearTimeout(timeoutId);
         const orderData = await response.json();
-        console.log("full backedn response:", orderData);
+        console.log("full backend response:", orderData);
         const options = {
             key: "rzp_live_Su10APgukCxwdi",
             amount: orderData.amount,
@@ -569,9 +622,31 @@ async function processRazorpayPayment(amountInINR, studentDetails = {}) {
 })
                     });
                     const verificationResult = await verificationResponse.json();
+                    if (!verificationResponse.ok) {
+
+    payBtn.disabled = false;
+
+    payBtn.innerText = "Continue Payment";
+
+    alert(
+        verificationResult.message ||
+        "Payment verification failed"
+    );
+
+    return;
+}
                     console.log("Verification Result:", verificationResult);
                     const updatedRemaining =
-verificationResult.remainingFees || 0;
+verificationResult.remainingFees ??
+(
+    parseFloat(currentStudent.totalFees || 0)
+    -
+    (
+        parseFloat(currentStudent.feesPaid || 0)
+        +
+        parseFloat(amountInINR || 0)
+    )
+);
                     if (verificationResult.success) {
                         payBtn.disabled = false;
 
@@ -612,13 +687,17 @@ payBtn.innerText = "Continue Payment";
                 color: "#1a365d"
             },
             modal: {
-                ondismiss: function () {
+                    ondismiss: function () {
+                        payBtn.disabled = false;
+                payBtn.innerText = "Continue Payment";
                     console.log("Payment popup closed");
                 }
             }
         };
         const razorpayWindow = new Razorpay(options);
         razorpayWindow.on('payment.failed', function (response) {
+            payBtn.disabled = false;
+            payBtn.innerText = "Continue Payment";
             console.log("Payment Failed:", response);
             alert(
                 "Payment Failed\n" +
@@ -627,16 +706,26 @@ payBtn.innerText = "Continue Payment";
         });
         razorpayWindow.open();
     } catch (error) {
-        const payBtn =
-document.getElementById('payBtn');
-
-payBtn.disabled = false;
-
-payBtn.innerText = "Continue Payment";
+        payBtn.disabled = false;
+        payBtn.innerText = "Continue Payment";
         console.log("FULL PAYMENT ERROR:", error);
-        alert(
-            "Backend connection failed.\n\n" + "Check:\n" + "1. Node server running\n" + "2. Port 3000 active\n" + "3. CORS enabled\n" + "4. API route exists");
-    }
+        if(error.name === "AbortError"){
+
+    alert(
+        "Server timeout.\n\nRailway backend is waking up or taking too long."
+    );
+
+} else {
+
+    alert(
+        "Backend connection failed.\n\n" +
+        "Check:\n" +
+        "1. Railway backend active\n" +
+        "2. API routes working\n" +
+        "3. CORS enabled"
+    );
+}
+}
 }
 </script>
 </body>
