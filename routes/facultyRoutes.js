@@ -4,17 +4,12 @@ const router = express.Router();
 
 const pool = require('../db');
 
-/*
-FACULTY REGISTER
-*/
-
+/*FACULTY REGISTER*/
 router.post('/register', async (req, res) => {
 
     try {
 
         const {
-
-            faculty_id,
             name,
             address,
             domain,
@@ -24,9 +19,14 @@ router.post('/register', async (req, res) => {
             qualifications,
             achievements,
             awards,
-            enrollment_date
-
+            enrollmentDate
         } = req.body;
+
+        const facultyId =
+            "PS-FAC-2026-" +
+            Math.floor(
+                1000 + Math.random() * 9000
+            );
 
         await pool.query(
 
@@ -44,11 +44,10 @@ router.post('/register', async (req, res) => {
                 awards,
                 enrollment_date
             )
-
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 
             [
-                faculty_id,
+                facultyId,
                 name,
                 address,
                 domain,
@@ -58,32 +57,30 @@ router.post('/register', async (req, res) => {
                 qualifications,
                 achievements,
                 awards,
-                enrollment_date
+                enrollmentDate
             ]
         );
 
         res.json({
             success: true,
-            message: 'Faculty Registered'
+            message: "Faculty Registered",
+            faculty: {
+                id: facultyId
+            }
         });
 
-    }
-
-    catch (error) {
+    } catch(error){
 
         console.log(error);
 
         res.status(500).json({
-            success: false,
-            error: error.message
+            success:false,
+            error:error.message
         });
     }
 });
 
-/*
-FACULTY LOGIN
-*/
-
+/*FACULTY LOGIN*/
 router.post('/login', async (req, res) => {
 
     try {

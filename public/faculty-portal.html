@@ -316,30 +316,36 @@
     let activeFacultySessionObject = null;
 
     function toggleAuthViews(showRegister) {
-        const loginArea = document.getElementById('loginArea');
-        const registerArea = document.getElementById('registerArea');
 
-        if (showRegister) {
-            if (loginArea) loginArea.style.display = 'none';
-            if (registerArea) {
-                registerArea.style.display = 'block';
-                // Reset visual animation state context
-                registerArea.style.animation = 'none';
-                registerArea.offsetHeight; /* trigger reflow layout engine */
-                registerArea.style.animation = null;
-            }
-        } else {
-            if (loginArea) {
-                loginArea.style.display = 'block';
-                loginArea.style.animation = 'none';
-                loginArea.offsetHeight; 
-                loginArea.style.animation = null;
-            }
-            if (registerArea) registerArea.style.display = 'none';
-        }
+    const loginArea =
+        document.getElementById("loginArea");
+
+    const registerArea =
+        document.getElementById("registerArea");
+
+    if (!loginArea || !registerArea) {
+        console.error(
+            "loginArea or registerArea not found"
+        );
+        return;
     }
 
-    function processFacultyEnrollment() {
+    if (showRegister) {
+
+        loginArea.style.display = "none";
+
+        registerArea.style.display = "block";
+
+    } else {
+
+        registerArea.style.display = "none";
+
+        loginArea.style.display = "block";
+
+    }
+}
+
+async  function processFacultyEnrollment() {
         const name = document.getElementById('facName').value.trim();
         const address = document.getElementById('facAddress').value.trim();
         const domain = document.getElementById('facDomain').value.trim();
@@ -384,31 +390,29 @@
 
 try{
     data = await response.json();
+    console.log("REGISTER RESPONSE:", data);
 }catch{
     throw new Error("Invalid backend response");
 }
+if (data.success) {
 
-    if(data.success){
+        const facultyId = data.faculty.id;
 
-        alert(
-            `Enrollment Successful!\nFaculty ID: ${data.faculty.id}`
-        );
-
-        document.getElementById('loginFacId').value =
-        data.faculty.id;
-
-        toggleAuthViews(false);
-
-    } else {
-
-        alert(data.message || "Registration failed");
-    }
-
-} catch(error){
-
-    console.log(error);
-
-    alert("Backend connection failed");
+    alert(
+        `Enrollment Successful!\nFaculty ID: ${facultyId}`
+    );
+    document.getElementById("loginFacId").value = facultyId;
+    toggleAuthViews(false);
+} else {
+    alert(data.message || "Registration failed");
+}
+    } catch(error){
+    console.error(
+        "Faculty Registration Error:", error
+    );
+    alert(
+        "Registration Error:\n" + error.message
+    );
 }
     }
 
@@ -430,7 +434,7 @@ try{
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    id,
+                     faculty_id: id,
                     dob
                 })
             }
@@ -455,7 +459,7 @@ try{
             .innerText = verifiedUser.name;
 
             document.getElementById('dispFacId')
-            .innerText = verifiedUser.id;
+            .innerText = verifiedUser.faculty_id;
 
             document.getElementById('dispFacDomain')
             .innerText = verifiedUser.domain;
@@ -510,6 +514,15 @@ try{
             return;
         }
             try {
+                const newTestEntry = {
+    facultyId:
+        activeFacultySessionObject.faculty_id,
+
+    title,
+
+    questions:
+        payloadData
+};
             await fetch("https://pinnacle-backend-5i7n.onrender.com/api/tests/publish-test", {
                 method: "POST",
                 headers: {
@@ -609,6 +622,11 @@ try{
         }
         renderMatrixLoop();
     })();
+
+    window.onload = function () {
+    document.getElementById("registerArea").style.display = "block";
+    document.getElementById("loginArea").style.display = "none";
+    };
 </script>
 </body>
 </html>

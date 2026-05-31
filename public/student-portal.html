@@ -475,159 +475,59 @@ button:hover{
 <script>
     let activeSessionUserObject = null;
 
-    function checkLogin() {
-
+    async function checkLogin() {
     const id = document.getElementById('loginId').value.trim();
-
     const dob = document.getElementById('loginDob').value;
-
-    const students =
-        JSON.parse(localStorage.getItem('registered_students')) || [];
-
-    const user = students.find(
-        s => s.id === id && s.dob === dob
-    );
-
-    if (user) {
-
+    if (!id || !dob) {
+        alert("Please enter ID and DOB");
+        return;
+    }
+    try {
+        const response = await fetch(
+            `https://pinnacle-backend-5i7n.onrender.com/api/students/${id}`
+        );
+        const data = await response.json();
+        if (!data.success || !data.student) {
+            alert("Student not found");
+            return;
+        }
+        const user = data.student;console.log(user);
+console.log("Raw DB DOB =", user.dob);
+console.log("Type =", typeof user.dob);
+        const dbDob =  new Date(user.dob).toISOString().split("T")[0];
+        if (dbDob !== dob) {
+            alert("Invalid DOB");
+            return;
+        }
         activeSessionUserObject = user;
-
-        // FETCH LIVE FEES FROM DATABASE
-fetch('https://pinnacle-backend-5i7n.onrender.com/api/get-student-fees', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        student_id: user.id
-    })
-})
-.then(res => res.json())
-.then(data => {
-
-    if(data.success){
-
-        // UPDATE VALUES FROM DATABASE
-        user.feesPaid = data.student.fees_paid || 0;
-        user.totalFees = data.student.total_fees || user.totalFees;
-
-        // OPTIONAL LIVE DISPLAY
-        const liveFeesDiv = document.getElementById('remainingFees');
-
-        if(liveFeesDiv){
-            liveFeesDiv.innerHTML =
-                "₹" + data.student.remaining_fees;
+        localStorage.setItem("active_student_id",user.student_id);
+        localStorage.setItem("active_student_name",user.name);
+        const totalFees = Number(user.total_fees || 0);
+        const feesPaid = Number(user.fees_paid || 0);
+        const remainingFees = Number(user.remaining_fees || 0);
+        document.getElementById('loginArea').style.display = "none";
+        document.getElementById('dashboardArea').style.display = "block";
+        document.getElementById('dispName').innerText = user.name;
+        document.getElementById('dispId').innerText = user.student_id;
+        document.getElementById('dispDomain').innerText = user.domain;
+        document.getElementById('dispTotal').innerText = totalFees.toFixed(2);
+        document.getElementById('dispPaid').innerText = feesPaid.toFixed(2);
+        document.getElementById('dispBalance').innerText = remainingFees.toFixed(2);
+        document.getElementById('remainingFees').innerText = "₹" + remainingFees;
+        activeSessionUserObject.calculatedBalance = remainingFees;
+        if (remainingFees <= 0) {
+            document.getElementById('dispStatus').innerText = "FULLY SETTLED & VERIFIED";
+            document.getElementById('dispStatus').style.color = "#38a169";
+            document.getElementById('portalPaymentButton').style.display = "none";
         }
     }
-
-})
-.catch(err => {
-    console.error("Fee Fetch Error:", err);
-});
-
-        // SAVE ACTIVE SESSION
-        localStorage.setItem(
-            "active_student_id",
-            user.id
-        );
-
-        localStorage.setItem(
-            "active_student_name",
-            user.name
-        );
-
-        // DYNAMIC COURSE FEE
-        let standardCourseFee =
-            parseFloat(user.totalFees) || 50000;
-
-        const userDomain =
-            user.domain || user.course || "Intermediate Track";
-
-        // MTECH CHECK
-        if (
-            !user.totalFees &&
-            (
-                userDomain.toLowerCase().includes('m.tech') ||
-                userDomain.toLowerCase().includes('mtech')
-            )
-        ) {
-            standardCourseFee = 80000;
-        }
-
-        // APPLY 5% DISCOUNT
-        const computedDiscount =
-            standardCourseFee * 0.05;
-
-        const finalAdjustedFeeAmount =
-            standardCourseFee - computedDiscount;
-
-        const calculatedFeesPaid =
-            parseFloat(user.feesPaid) || 0;
-
-        const totalOutstandingRemainder =
-            Math.max(
-                0,
-                finalAdjustedFeeAmount - calculatedFeesPaid
-            );
-
-        // STORE SESSION VALUES
-        activeSessionUserObject.calculatedTotal =
-            finalAdjustedFeeAmount;
-
-        activeSessionUserObject.calculatedBalance =
-            totalOutstandingRemainder;
-
-        // SHOW DASHBOARD
-        document.getElementById('loginArea').style.display =
-            'none';
-
-        document.getElementById('dashboardArea').style.display =
-            'block';
-
-        // DISPLAY VALUES
-        document.getElementById('dispName').innerText =
-            user.name;
-
-        document.getElementById('dispId').innerText =
-            user.id;
-
-        document.getElementById('dispDomain').innerText =
-            userDomain;
-
-        document.getElementById('dispTotal').innerText =
-            finalAdjustedFeeAmount.toFixed(2);
-
-        document.getElementById('dispPaid').innerText =
-            calculatedFeesPaid.toFixed(2);
-
-        document.getElementById('dispBalance').innerText =
-            totalOutstandingRemainder.toFixed(2);
-
-        // PAYMENT STATUS
-        if (totalOutstandingRemainder <= 0) {
-
-            const statusElement =
-                document.getElementById('dispStatus');
-
-            statusElement.innerText =
-                "FULLY SETTLED & VERIFIED";
-
-            statusElement.style.color =
-                "#38a169";
-
-            document.getElementById(
-                'portalPaymentButton'
-            ).style.display = "none";
-        }
-
-    } else {
-
+    catch(error) {
+        console.log(error);
         alert(
-            "Invalid Credentials. Please check your unique ID and DOB."
+            "Unable to connect to server"
         );
     }
 }
-
     function executeStudentPortalPayment() {
         if (!activeSessionUserObject) {
             alert("Session assessment sync breakdown. Please log in again.");
@@ -649,7 +549,7 @@ fetch('https://pinnacle-backend-5i7n.onrender.com/api/get-student-fees', {
             body: JSON.stringify({
                 amount: calculatedPaiseUnits,
                 currency: 'INR',
-                receipt: 'rcpt_portal_' + activeSessionUserObject.id + '_' + Date.now()
+                receipt: 'rcpt_portal_' + activeSessionUserObject.student_id + '_' + Date.now()
             })
         })
         .then(res => {
@@ -671,23 +571,19 @@ fetch('https://pinnacle-backend-5i7n.onrender.com/api/get-student-fees', {
                         body: JSON.stringify({
                             razorpay_order_id: paymentVerificationData.razorpay_order_id,
                             razorpay_payment_id: paymentVerificationData.razorpay_payment_id,
-                            razorpay_signature: paymentVerificationData.razorpay_signature
+                            razorpay_signature: paymentVerificationData.razorpay_signature,
+                            student_id: activeSessionUserObject.student_id,
+                            payment_type: "STUDENT_PORTAL_PAYMENT",
+                            paid_amount: outstandingLiabilityAmount
                         })
                     })
                     .then(verifyResponse => verifyResponse.json())
                     .then(verificationOutput => {
                         if (verificationOutput.success || verificationOutput.status === "verified") {
                             alert("Payment processed and verified successfully! ID: " + paymentVerificationData.razorpay_payment_id);
-                            
-                            // Synchronize database records safely
-                            const databaseRegistry = JSON.parse(localStorage.getItem('registered_students')) || [];
-                            const updatedRegistry = databaseRegistry.map(studentItem => {
-                                if (studentItem.id === activeSessionUserObject.id) {
-                                    studentItem.feesPaid = (parseFloat(studentItem.feesPaid) || 0) + outstandingLiabilityAmount;
-                                }
-                                return studentItem;
-                            });
-                            localStorage.setItem('registered_students', JSON.stringify(updatedRegistry));
+                           alert(
+    "Payment verified and database updated successfully."
+);
                             location.reload();
                         } else {
                             alert("Verification confirmation rejected by server security checklist.");
@@ -700,7 +596,7 @@ fetch('https://pinnacle-backend-5i7n.onrender.com/api/get-student-fees', {
                 },
                 "prefill": {
                     "name": activeSessionUserObject.name,
-                    "email": "student." + activeSessionUserObject.id.toLowerCase() + "@pinnacle.edu.in",
+                    "email": "student." + activeSessionUserObject.student_id.toLowerCase() + "@pinnacle.edu.in",
                     "contact": "9999999999"
                 },
                 "theme": { "color": "#1a365d" },

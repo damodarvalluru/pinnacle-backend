@@ -214,15 +214,9 @@ console.log("Inserting Into Database...");
                 remaining_fees
             }
         });
-
-    }
-
+}
     catch (error) {
-
-        console.log("========== ERROR START ==========");
 console.log(error);
-console.log("========== ERROR END ==========");
-
         res.status(500).json({
 
             success: false,
@@ -234,11 +228,7 @@ console.log("========== ERROR END ==========");
         });
     }
 });
-
-/*
-GET STUDENT
-*/
-
+/*GET STUDENT*/
 router.get('/:studentId', async (req, res) => {
 
     try {
