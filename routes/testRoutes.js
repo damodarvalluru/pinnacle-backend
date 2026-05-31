@@ -13,7 +13,18 @@ router.post('/publish-test', async (req, res) => {
             title,
             questions
         } = req.body;
-
+        if(
+    !test_type ||
+    !faculty_id ||
+    !faculty_name ||
+    !title ||
+    !questions
+){
+    return res.status(400).json({
+        success:false,
+        message:"Missing Required Fields"
+    });
+}
         const testId =
         'TEST-' + Date.now();
 
@@ -36,7 +47,7 @@ router.post('/publish-test', async (req, res) => {
                 faculty_id,
                 faculty_name,
                 title,
-                JSON.stringify(questions)
+                typeof questions === "string" ? questions : JSON.stringify(questions)
             ]
         );
 
