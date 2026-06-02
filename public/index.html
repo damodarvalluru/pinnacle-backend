@@ -28,23 +28,17 @@
         
         [data-theme="light"]{
     --primary:#ffffff;
-    --secondary:#2563eb;
-    --accent:#f59e0b;
-
-    --grad-start:#f4f7fb;
-    --grad-end:#e9eef7;
-
-    --text-main:#0f172a;
-
-    --card-bg:rgba(255,255,255,0.92);
-
-    --glass:rgba(255,255,255,0.7);
-
-    --border:rgba(15,23,42,0.08);
-
-    --shadow:0 10px 35px rgba(0,0,0,.08);
-
-    --watermark-color:rgba(15,23,42,.035);
+    --secondary:#1e40af;
+    --accent:#d97706;
+    /* Professional Executive Theme */
+    --grad-start:#f8fafc;
+    --grad-end:#e2e8f0;
+    --text-main:#1e293b;
+    --card-bg:#ffffff;
+    --glass:rgba(255,255,255,.85);
+    --border:rgba(15,23,42,.08);
+    --shadow:0 10px 30px rgba(15,23,42,.08);
+    --watermark-color:rgba(15,23,42,.025);
 }
         
         *{
@@ -65,24 +59,25 @@
         }
         
         [data-theme="light"] body{
-    background:
-        radial-gradient(circle at top left,#dbeafe 0%,transparent 28%),
-        radial-gradient(circle at bottom right,#ede9fe 0%,transparent 24%),
-        linear-gradient(
-            135deg,
-            var(--grad-start),
-            var(--grad-end)
+    background: linear-gradient(180deg,
+            #f8fafc 0%,
+            #f1f5f9 40%,
+            #e2e8f0 100%
         );
-
-    color:#0f172a;
+    color:#1e293b;
 }
 
         [data-theme="light"] header{
-    background:rgba(255,255,255,.85);
-    border-bottom:1px solid rgba(15,23,42,.08);
-    box-shadow:0 8px 25px rgba(0,0,0,.06);
-}
 
+    background:
+        rgba(255,255,255,.95);
+
+    border-bottom:
+        1px solid rgba(148,163,184,.15);
+
+    box-shadow:
+        0 4px 18px rgba(15,23,42,.06);
+}
 [data-theme="light"] .nav-links a{
     color:#0f172a;
 }
@@ -146,29 +141,111 @@
             display:flex;
             justify-content:space-between;
             align-items:center;
-            padding:1rem 5%;
+            padding:10px 22px;
             background:rgba(2,6,23,.75);
             backdrop-filter:blur(18px);
-            border-bottom:1px solid rgba(255,255,255,.08);
+            border-bottom:none;
             box-shadow:0 8px 25px rgba(0,0,0,.25);
+             margin-bottom:0 !important;
         }
         
         .nav-links{
-            display:flex;
-            align-items:center;
-            gap:18px;
-            flex-wrap:wrap;
-        }
-        
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    flex-wrap:wrap;
+
+    position:relative;
+
+    padding:8px 18px;
+
+    border-radius:80px;
+
+    background:
+        rgba(255,255,255,.06);
+
+    backdrop-filter:blur(18px);
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.25),
+        0 0 25px rgba(37,99,235,.15);
+
+    overflow:hidden;
+}
+.nav-links::before{
+    content:"";
+
+    position:absolute;
+
+    inset:-2px;
+
+    border-radius:82px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #7c3aed,
+            #f59e0b,
+            #2563eb
+        );
+
+    background-size:300% 300%;
+
+    animation:
+        navBorderMove 6s linear infinite;
+
+    z-index:-2;
+}        
+.nav-links::after{
+    content:"";
+
+    position:absolute;
+
+    inset:1px;
+
+    border-radius:80px;
+
+    background:
+        rgba(2,6,23,.88);
+
+    z-index:-1;
+}
+@keyframes navBorderMove{
+
+    0%{
+        background-position:0% 50%;
+    }
+
+    50%{
+        background-position:100% 50%;
+    }
+
+    100%{
+        background-position:0% 50%;
+    }
+
+}
+
         .nav-links a{
-            color:#fff;
-            text-decoration:none;
-            font-size:.95rem;
-            font-weight:600;
-            position:relative;
-            transition:.35s ease;
-            padding-bottom:4px;
-        }
+    color:#fff;
+    text-decoration:none;
+
+    font-size:.95rem;
+    font-weight:600;
+
+    position:relative;
+
+    padding:10px 16px;
+
+    border-radius:30px;
+
+    transition:.35s ease;
+}
         
         .nav-links a::after{
             content:"";
@@ -181,11 +258,37 @@
             transition:.35s ease;
         }
         
-        .nav-links a:hover{
-            color:#facc15;
-            transform:translateY(-2px);
-        }
-        
+           .nav-links a:hover{
+    color:#ffffff;
+
+    transform:
+        translateY(-3px)
+        scale(1.05);
+
+    background:
+        rgba(255,255,255,.08);
+
+    text-shadow:
+        0 0 12px rgba(255,255,255,.8);
+}   
+[data-theme="light"] .nav-links{
+
+    background:
+        rgba(255,255,255,.85);
+
+    border:
+        1px solid rgba(148,163,184,.15);
+
+    box-shadow:
+        0 8px 25px rgba(15,23,42,.08);
+
+}
+[data-theme="light"] .nav-links::after{
+
+    background:
+        rgba(255,255,255,.95);
+
+}
         .nav-links a:hover::after{
             width:100%;
         }
@@ -257,16 +360,29 @@
         }
         
         .notice-ticker-container{
-            height:46px;
-            background:rgba(255,255,255,.06);
-            backdrop-filter:blur(10px);
-            border-top:1px solid rgba(255,255,255,.08);
-            border-bottom:1px solid rgba(255,255,255,.08);
-            display:flex;
-            align-items:center;
-            overflow:hidden;
-        }
-        
+    position:sticky;
+    top:89px; /* header height */
+    z-index:999;
+
+    height:46px;
+
+    background:linear-gradient(90deg,#0f172a,#1e293b);
+    backdrop-filter:blur(10px);
+
+    border-top:none;
+    border-bottom:1px solid rgba(255,255,255,.08);
+
+    display:flex;
+    align-items:center;
+    overflow:hidden;
+}
+        @media(max-width:900px){
+
+    .notice-ticker-container{
+        top:140px;
+    }
+
+}
         .notice-ticker-title{
             min-width:190px;
             height:100%;
@@ -324,66 +440,136 @@
         
         /* FIX: Added relative positioning and high z-index to explicitly lift interactive workspace above all else */
         .hero{
-            position:relative;
-            z-index:10;
-            min-height:88vh;
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            align-items:center;
-            text-align:center;
-            padding:0 20px;
-            background:linear-gradient(rgba(2,6,23,.78),rgba(2,6,23,.82)),url('https://images.unsplash.com/photo-1523050335392-9ae86774929f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-            background-size:cover;
-            background-position:center;
-            overflow:hidden;
-        }
-        
+    position:relative;
+    z-index:10;
+    min-height:88vh;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:0 20px;
+    background:linear-gradient(135deg,#081120 0%,#10203b 25%,#1a365d 55%,#1e40af 80%,#2563eb 100%);
+    overflow:hidden;
+}
+        #overview{
+    position:relative;
+
+    background:
+    linear-gradient(
+        180deg,
+        #0b1220 0%,
+        #13233f 100%
+    );
+
+    border-top:
+        1px solid rgba(255,255,255,.05);
+
+    border-bottom:
+        1px solid rgba(255,255,255,.05);
+}
         .hero::before{
-            content:"";
-            position:absolute;
-            width:600px;
-            height:600px;
-            border-radius:50%;
-            background:radial-gradient(circle,rgba(59,130,246,.18),transparent 70%);
-            top:-180px;
-            right:-150px;
-            animation:pulseGlow 7s ease-in-out infinite;
-            pointer-events:none;
-        }
-        
-        .hero::after{
-            content:"";
-            position:absolute;
-            width:500px;
-            height:500px;
-            border-radius:50%;
-            background:radial-gradient(circle,rgba(168,85,247,.14),transparent 70%);
-            bottom:-200px;
-            left:-160px;
-            animation:pulseGlow 8s ease-in-out infinite alternate;
-            pointer-events:none;
-        }
-        
+    content:"";
+    position:absolute;
+
+    width:700px;
+    height:700px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(59,130,246,.25),
+            transparent 70%
+        );
+
+    top:-250px;
+    right:-180px;
+
+    animation:pulseGlow 8s ease-in-out infinite;
+
+    pointer-events:none;
+}
+
+.hero::after{
+    content:"";
+    position:absolute;
+
+    width:650px;
+    height:650px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(168,85,247,.18),
+            transparent 70%
+        );
+
+    bottom:-250px;
+    left:-180px;
+
+    animation:pulseGlow 10s ease-in-out infinite alternate;
+
+    pointer-events:none;
+}
+        .hero .hero-grid{
+    position:absolute;
+    inset:0;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,.03) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.03) 1px,
+            transparent 1px
+        );
+
+    background-size:50px 50px;
+
+    pointer-events:none;
+}
         @keyframes pulseGlow{
             50%{transform:scale(1.08)}
         }
         
         .hero h1{
-            font-size:4rem;
-            font-weight:900;
-            line-height:1.15;
-            margin-bottom:20px;
-            text-shadow:0 8px 35px rgba(0,0,0,.45);
-            max-width:900px;
-        }
+    font-size:4.5rem;
+    font-weight:900;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #93c5fd
+        );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    text-shadow:none;
+
+    max-width:1000px;
+
+    margin-bottom:20px;
+}
         
         .hero p{
-            font-size:1.2rem;
-            max-width:760px;
-            color:#e2e8f0;
-            margin-bottom:28px;
-        }
+    font-size:1.25rem;
+    color:#cbd5e1;
+
+    max-width:850px;
+
+    margin-bottom:35px;
+
+    letter-spacing:.5px;
+}
         
         /* FIX: Enforced continuous interactive capability across the action block */
         .hero-btns{
@@ -430,9 +616,27 @@
             left:120%;
         }
         
-        .cta-btn:hover, .portal-btn:hover{
-            transform:translateY(-5px) scale(1.03);
-        }
+        .cta-btn:hover,
+.portal-btn:hover{
+    transform:
+        translateY(-6px)
+        scale(1.04);
+
+    box-shadow:
+        0 20px 45px rgba(37,99,235,.25);
+
+    filter:
+        brightness(1.08);
+}
+.cta-btn:focus,
+.portal-btn:focus,
+.theme-toggle-btn:focus{
+    outline:none;
+
+    box-shadow:
+        0 0 0 4px rgba(37,99,235,.35),
+        0 0 25px rgba(37,99,235,.30);
+}
         
         .hero-brochure-orb{
             position:absolute;
@@ -535,8 +739,27 @@
         
         .card::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);opacity:0;transition:.4s ease}
         
-        .card:hover{transform:translateY(-12px) rotateX(2deg) scale(1.01);box-shadow:0 25px 60px rgba(0,0,0,.38)}
+        .card:hover{
+    transform:
+        translateY(-10px)
+        scale(1.02);
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,.40);
+}
         
+        [data-theme="light"] .card:hover{
+
+    transform:
+        translateY(-8px);
+
+    box-shadow:
+
+        0 18px 40px rgba(15,23,42,.12),
+
+        0 6px 15px rgba(15,23,42,.08);
+}
+
         .card:hover::after{opacity:1}
         
         .card h3{font-size:1.35rem;margin-bottom:12px;color:#fff}
@@ -555,13 +778,19 @@
 }
         
     [data-theme="light"] .card{
-    background:rgba(255,255,255,.95);
-    border:1px solid rgba(15,23,42,.06);
+
+    background:#ffffff;
+
+    border:
+        1px solid rgba(148,163,184,.18);
 
     box-shadow:
-        0 10px 30px rgba(15,23,42,.08);
 
-    backdrop-filter:blur(12px);
+        0 8px 25px rgba(15,23,42,.06),
+
+        0 2px 8px rgba(15,23,42,.04);
+
+    backdrop-filter:none;
 }
 
 [data-theme="light"] .notice-ticker-container{
@@ -577,9 +806,13 @@
     border-bottom:1px dashed #2563eb;
 }
 [data-theme="light"] footer{
+
     background:#ffffff;
-    color:#334155;
-    border-top:1px solid rgba(15,23,42,.08);
+
+    color:#475569;
+
+    border-top:
+        1px solid rgba(148,163,184,.15);
 }
 [data-theme="light"] .cta-btn,
 [data-theme="light"] .portal-btn{
@@ -613,7 +846,13 @@
         
         #overview p{max-width:980px;margin:auto}
         
-        .portal-links{text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+        [data-theme="light"] .portal-links{
+    background:linear-gradient(
+            180deg,
+            #ffffff,
+            #f8fafc
+        );
+}
         
         footer{text-align:center;padding:30px 20px;background:rgba(2,6,23,.82);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.08);font-size:.95rem;color:#cbd5e1}
         
@@ -642,11 +881,54 @@
         /* --- NEW: Moving Blocks Background for Portals Section --- */
 
 /* Ensure the portals section acts as the relative canvas for the blocks */
-.portal-links {
-    position: relative;
-    overflow: hidden; /* Prevents blocks from leaking outside the section */
-}
+.portal-links{
+    position:relative;
+    overflow:hidden;
 
+    text-align:center;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    background:
+    linear-gradient(
+        135deg,
+        #08111f,
+        #122544,
+        #1a365d
+    );
+
+    border-top:
+        1px solid rgba(255,255,255,.05);
+
+    border-bottom:
+        1px solid rgba(255,255,255,.05);
+}
+.portal-buttons{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:25px;
+    flex-wrap:wrap;
+    margin-top:25px;
+    position:relative;
+    z-index:5;
+}
+@media(max-width:600px){
+
+    .portal-buttons{
+        flex-direction:column;
+        gap:15px;
+        width:100%;
+    }
+
+    .portal-buttons .portal-btn{
+        width:100%;
+        max-width:320px;
+    }
+}
 /* Layer the actual content safely above the moving shapes */
 .portal-content {
     position: relative;
@@ -662,15 +944,28 @@
 }
 
 /* Universal styles for the moving geometric shapes */
-.p-block {
-    position: absolute;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(4px);
-    border-radius: 24px;
-    animation: floatBlocks 20s infinite linear;
-}
+.p-block{
+    position:absolute;
 
+    background:
+    linear-gradient(
+        135deg,
+        rgba(255,255,255,.08),
+        rgba(255,255,255,.02)
+    );
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    backdrop-filter:blur(8px);
+
+    border-radius:24px;
+
+    animation:floatBlocks 20s infinite linear;
+
+    box-shadow:
+        0 0 25px rgba(37,99,235,.12);
+}
 /* Light mode adjustments so blocks remain ultra-subtle */
 [data-theme="light"] .p-block {
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.01));
@@ -783,6 +1078,7 @@
     .portal-btn{
         padding:13px 24px;
         font-size:.95rem;
+        outline:none;
     }
 
     .hero-brochure-orb{
@@ -899,13 +1195,20 @@
     }
 
     .cta-btn,
-    .portal-btn{
-        width:100%;
-        max-width:320px;
-        justify-content:center;
-        padding:14px 20px;
-        font-size:.92rem;
-    }
+.portal-btn{
+    width:100%;
+    max-width:340px;
+
+    min-height:52px;
+
+    justify-content:center;
+
+    padding:15px 22px;
+
+    font-size:.95rem;
+
+    border-radius:14px;
+}
 
     .hero-brochure-orb{
         width:120px;
@@ -1281,56 +1584,36 @@ PREMIUM WELCOME INTRO SCREEN
 }
 
 @keyframes introFlash{
-
-    0%{
-        opacity:0;
-    }
-
-    30%{
-        opacity:1;
-    }
-
-    100%{
-        opacity:0;
-    }
+    0%{ opacity:0; }
+    30%{ opacity:1; }
+    100%{ opacity:0; }
 }
-
 /* =========================================
 FINAL CINEMATIC MULTICOLOR BARS
 ========================================= */
-
 .netflix-bars{
     position:absolute;
     inset:0;
     display:flex;
-    z-index:100;
+    z-index:30;
     overflow:hidden;
     pointer-events:none;
 }
-
 /* BARS */
-
 .n-bar{
     flex:1;
     height:100%;
-
     transform:translateY(-100%);
-
-    transition:
-        transform 1.3s cubic-bezier(.77,0,.18,1);
-
-    box-shadow:
-        0 0 40px rgba(0,0,0,.35);
+    transition:transform 1.3s cubic-bezier(.77,0,.18,1);
+    box-shadow:0 0 40px rgba(0,0,0,.35);
 }
-
 /* =========================================
 PPT WEBSITE OPENING DOORS
 ========================================= */
-
 .ppt-doors{
     position:absolute;
     inset:0;
-    z-index:120;
+    z-index:40;
     pointer-events:none;
     overflow:hidden;
 }
@@ -1682,7 +1965,7 @@ PPT OPENING DOORS
             SCHOLARS <span style="font-weight: 800; color: #0cf827; letter-spacing: 4px;">ACADEMY</span>
         </span>
     </h1>
-</div>    
+</div>   
 
 <nav class="nav-links">
         <a href="#syllabus">Syllabus</a>
@@ -1733,6 +2016,7 @@ PPT OPENING DOORS
 </div>
 
 <section class="hero" id="brouchure-section">
+    <div class="hero-grid"></div>
     <!-- Professional Floating Hero Orb -->
 <div class="hero-brochure-orb"
      data-aos="zoom-in-left"
@@ -1920,10 +2204,12 @@ PPT OPENING DOORS
     </div>
 
     <h2>Access Portals</h2>
-    <p>Login to manage your academic journey.</p><br>
-    <button class="portal-btn" onclick="navigateTo('student')">Student Login</button>&nbsp;&nbsp;&nbsp;
-    <button class="portal-btn" style="background: var(--secondary);" onclick="navigateTo('faculty')">Faculty Login</button>&nbsp;&nbsp;&nbsp;
+    <p>Login to manage your academic journey.</p>
+    <div class="portal-buttons">
+    <button class="portal-btn" onclick="navigateTo('student')">Student Login</button>
+    <button class="portal-btn" style="background: var(--secondary);" onclick="navigateTo('faculty')">Faculty Login</button>
     <button class="portal-btn" style="background: var(--accent);" onclick="navigateTo('results')">Check Results</button>
+</div>
 </section>
 
 <section class="visitor-section">
@@ -2653,7 +2939,7 @@ async function startTest(domain) {
             // ELIGIBILITY CHECK
 
             const eligibilityResponse = await fetch(
-                `https://pinnacle-backend-5i7n.onrender.com/api/student-eligible-test/${studentId}`
+                `https://pinnacle-backend-5i7n.onrender.com/api/tests/student-eligible/${studentId}`
             );
 
             if(!eligibilityResponse.ok){
@@ -2718,7 +3004,7 @@ async function startTest(domain) {
 
 }
 
-function showTestInterface(testObject) {
+async function showTestInterface(testObject) {
 
     let parsedQuestions = [];
 
@@ -2959,7 +3245,7 @@ function showTestInterface(testObject) {
 
     document
     .getElementById("submitTestBtn")
-    .addEventListener("click", function(){
+    .addEventListener("click", async function(){
 
         let score = 0;
 
@@ -2998,98 +3284,67 @@ function showTestInterface(testObject) {
             }
 
         });
-
         // SAVE RESULT
+        try{
 
-        const resultData = {
+    const saveResponse =
+    await fetch(
 
-            student_id:
-                localStorage.getItem("active_student_id"),
+    "https://pinnacle-backend-5i7n.onrender.com/api/tests/submit-result",
 
-            dob:
-                localStorage.getItem("active_student_dob"),
-
-            test_id:testObject.test_id,
-
-            score:score,
-
-            total:
-                parsedQuestions.length * 4,
-
-            submitted_at:
-                new Date().toLocaleString()
-        };
-
-        let allResults =
-            JSON.parse(
-                localStorage.getItem("student_test_results")
-            ) || [];
-
-        allResults.push(resultData);
-
-localStorage.setItem(
-    "student_test_results",
-    JSON.stringify(allResults)
-);
-
-// BACKEND SAVE
-
-fetch(
-    "https://pinnacle-backend-5i7n.onrender.com/api/submit-result",
     {
         method:"POST",
+
         headers:{
             "Content-Type":"application/json"
         },
+
         body:JSON.stringify({
+
             student_id:
-                localStorage.getItem("active_student_id"),
+            localStorage.getItem("active_student_id"),
 
             student_name:
-                localStorage.getItem("active_student_name"),
+            localStorage.getItem("active_student_name"),
 
-            test_id:testObject.test_id,
+            test_id:
+            testObject.test_id,
 
-            score:score
+            score
         })
-    }
-)
-.then(res=>res.json())
-.then(data=>{
-
-    console.log("Result Saved:",data);
-
-})
-.catch(err=>{
-
-    console.error(
-        "Backend Result Save Failed",
-        err
-    );
-
-});
-
-        alert(
-            `Test Submitted Successfully\n\n` +
-            `Score : ${score}\n\n` +
-            `Result saved successfully for Result Portal.`
-        );
-
-        location.reload();
-
     });
 
+    const saveData =
+    await saveResponse.json();
+
+    if(!saveData.success){
+
+        throw new Error(
+            "Result save failed"
+        );
+    }
+
+    alert(
+        `Test Submitted Successfully\n\nScore : ${score}`
+    );
+
+    location.reload();
+
+}
+catch(err){
+    console.error(err);
+    alert(
+        "Database save failed.\nContact administrator."
+    );
+}
+    });
 }
 
 function downloadBrochure() {
-
     const watermark = "PINNACLE ACADEMY";
-
     // Render a clean interface modal layout container
     let modal = document.getElementById('prospectusViewModal');
-
     if (!modal) {
-
         modal = document.createElement('div');
 
         modal.id = 'prospectusViewModal';
@@ -3488,80 +3743,67 @@ async function updateVisitorCount(){
 
     try{
 
-        const response =
-            await fetch(
-                "https://api.countapi.xyz/hit/pinnacle-scholars-academy/visitors"
-            );
-
-        const data = await response.json();
-
-        animateCounter(data.value);
-
-    }
-    catch(error){
-
-        console.log(
-            "Visitor counter error:",
-            error
+        let visitorKey =
+        localStorage.getItem(
+            "visitor_key"
         );
 
-    }
+        if(!visitorKey){
 
-}
+            visitorKey =
+            crypto.randomUUID();
 
-async function updateVisitorCount(){
-
-    try{
+            localStorage.setItem(
+                "visitor_key",
+                visitorKey
+            );
+        }
 
         const response =
-            await fetch(
-                "https://api.countapi.xyz/hit/pinnacle-scholars-academy/visitors"
-            );
-
-        const data = await response.json();
-
-        animateCounter(data.value);
-
-    }
-    catch(error){
-
-        console.log(
-            "Visitor counter error:",
-            error
-        );
-
-    }
-
-}
-
-function animateCounter(target){
-
-    const counter =
-        document.getElementById("visitor-count");
-
-    let count = 0;
-
-    const increment =
-        Math.ceil(target / 100);
-
-    const timer =
-        setInterval(()=>{
-
-            count += increment;
-
-            if(count >= target){
-
-                count = target;
-
-                clearInterval(timer);
-
+        await fetch(
+            "https://pinnacle-backend-5i7n.onrender.com/api/visitors/visit",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+                body:JSON.stringify({
+                    visitorKey
+                })
             }
+        );
 
-            counter.innerText =
-                count.toLocaleString();
+        const data =
+        await response.json();
 
+        if(data.success){
+
+            animateCounter(
+                data.totalVisitors
+            );
+        }
+
+    }
+    catch(error){
+
+        console.log(
+            "Visitor Error",
+            error
+        );
+    }
+}
+function animateCounter(target){
+const counter = document.getElementById("visitor-count");
+let count = 0;
+const increment = Math.ceil(target / 100);
+const timer = setInterval(()=>{count += increment;
+    if(count >= target){
+        count = target;
+        clearInterval(timer);
+    }
+    counter.innerText = count.toLocaleString();
         },20);
-
 }
 
 updateVisitorCount();
@@ -3573,53 +3815,37 @@ updateVisitorCount();
         else if (target === 'enroll') window.location.href = 'enrollment.html';
     }
 
-window.addEventListener("load",()=>{
+    window.addEventListener("load", () => {
+
     const intro =
         document.getElementById("welcomeIntro");
-    document.body.style.overflow = "hidden";
-    /* SHOW INTRO MESSAGE */
-    setTimeout(()=>{
-        /* STEP 1:
-           BARS FALL DOWN */
+
+    if (!intro) return;
+
+    setTimeout(() => {
         intro.classList.add("drop-bars");
-        /* WAIT UNTIL BARS COVER SCREEN */
-        setTimeout(()=>{
-            /* HIDE INTRO CONTENT */
-            const introContent =
-                document.querySelector(".intro-content");
-            introContent.style.opacity = "0";
-            introContent.style.transition =
-                "opacity .3s ease";
-            /* STEP 2:
-               BARS GO BACK UP */
-            intro.classList.add("open-bars");
-        },1700);
-        /* REMOVE ENTIRE INTRO */
-        /* STEP 3:
-   PPT DOORS COME TO CENTER */
+    }, 6500);
 
-setTimeout(()=>{
+    setTimeout(() => {
+        intro.classList.add("open-bars");
+    }, 8500);
 
-    intro.classList.add("show-ppt");
+    setTimeout(() => {
+        intro.classList.add("show-ppt");
+    }, 9800);
 
-},3200);
+    setTimeout(() => {
+        intro.classList.add("open-ppt");
+    }, 11300);
 
-/* STEP 4:
-   PPT DOORS OPEN WEBSITE */
+    setTimeout(() => {
+        intro.classList.add("hide");
 
-setTimeout(()=>{
+        document.body.style.overflow = "auto";
+    }, 12800);
 
-    intro.classList.add("open-ppt");
-
-},3700);
-/* STEP 5:
-  REMOVE INTRO */
-setTimeout(()=>{
-    intro.classList.add("hide");
-    document.body.style.overflow = "";
-},5200);
-    },7000);
-}); 
+});
 </script>
+<script src="script.js"></script>
 </body>
 </html>

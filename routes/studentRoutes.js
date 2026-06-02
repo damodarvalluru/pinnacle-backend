@@ -157,12 +157,7 @@ console.log("REQUEST BODY:", req.body);
         const remaining_fees =
             totalFees;
 
-            console.log("Generated Student ID:", student_id);
-
-console.log("Total Fees:", totalFees);
-
-console.log("Inserting Into Database...");
-        /*
+            /*
         INSERT INTO DATABASE
         */
 

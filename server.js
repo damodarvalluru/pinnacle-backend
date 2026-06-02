@@ -6,6 +6,7 @@ const studentRoutes = require('./routes/studentRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const testRoutes = require('./routes/testRoutes');
+const visitorRoutes = require('./routes/visitorRoutes');
 const cron = require('node-cron');
 const twilio = require('twilio');
 const db = require('./db');
@@ -88,6 +89,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/tests', testRoutes);
+app.use('/api/visitors', visitorRoutes);
 // CRITICAL FIX: Wildcard router placed at the absolute bottom of the stack
 // Wildcard route ONLY for frontend pages
 app.get('*', (req, res, next) => {

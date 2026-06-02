@@ -73,16 +73,11 @@ router.get('/student-eligible/:studentId', async (req, res) => {
 
         const studentId = req.params.studentId;
 
-        const [students] = await db.execute(
+        const dob = req.query.dob;
 
-            `SELECT * FROM students
-             WHERE student_id = ?`,
-
-            [studentId]
-        );
+const [students] = await db.execute(`SELECT * FROM students WHERE student_id = ? AND dob = ?`,[studentId,dob]);
 
         if (students.length === 0) {
-
             return res.json({
                 eligible: false,
                 message: 'Student Not Found'
@@ -135,34 +130,47 @@ router.post('/submit-result', async (req, res) => {
     try {
 
         const {
-            student_id,
-            student_name,
-            test_id,
-            score
-        } = req.body;
+    student_id,
+    student_name,
+    test_id,
+    score,
+    total_marks
+} = req.body;
 
         const resultId =
             require('uuid').v4();
-
+if(
+    !student_id ||
+    !student_name ||
+    !test_id ||
+    score === undefined
+){
+    return res.status(400).json({
+        success:false,
+        message:"Missing Required Fields"
+    });
+}
         await db.execute(
 
             `INSERT INTO test_results
-            (
-                result_id,
-                student_id,
-                student_name,
-                test_id,
-                score
-            )
+(
+    result_id,
+    student_id,
+    student_name,
+    test_id,
+    score,
+    total_marks
+)
 
-            VALUES (?, ?, ?, ?, ?)`,
+            VALUES (?, ?, ?, ?, ?, ?)`,
 
             [
                 resultId,
                 student_id,
                 student_name,
                 test_id,
-                score
+                score,
+                total_marks
             ]
         );
 
@@ -190,12 +198,37 @@ router.get('/result/:studentId', async (req, res) => {
         const studentId =
             req.params.studentId;
 
+             const dob =
+        req.query.dob;
+        const [student] =
+        await db.execute(
+
+        `
+        SELECT *
+        FROM students
+        WHERE student_id=?
+        AND dob=?
+        `,
+        [
+            studentId,
+            dob
+        ]
+        );
+
+        if(student.length===0){
+
+            return res.json({
+                success:false,
+                message:"Invalid Credentials"
+            });
+        }
         const [results] =
         await db.execute(
 
             `SELECT *
              FROM test_results
-             WHERE student_id = ?`,
+             WHERE student_id = ?
+             ORDER BY submitted_at DESC LIMIT 1`,
 
             [studentId]
         );
@@ -238,8 +271,16 @@ router.get('/:type', async (req, res) => {
 
             ...test,
 
-            questions:
-            JSON.parse(test.questions)
+           questions: (() => {
+
+    try{
+        return JSON.parse(test.questions);
+    }
+    catch{
+        return test.questions;
+    }
+
+})()
         }));
 
         res.json(parsedTests);

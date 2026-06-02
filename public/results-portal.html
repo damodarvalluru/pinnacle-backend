@@ -527,20 +527,13 @@ footer p {
     <script>
        
 
-function checkResult(){
-
-    // GET INPUTS
+async function checkResult(){
 
     const studentId =
-        document.getElementById("roll-input")
-        .value
-        .trim();
+        document.getElementById("roll-input").value.trim();
 
     const dob =
-        document.getElementById("dob-input")
-        .value;
-
-    // VALIDATION
+        document.getElementById("dob-input").value;
 
     if(!studentId || !dob){
 
@@ -552,132 +545,153 @@ function checkResult(){
         return;
     }
 
-    // FETCH SAVED RESULTS
+    try{
 
-    const allResults =
-        JSON.parse(
-            localStorage.getItem("student_test_results")
-        ) || [];
+        // VERIFY STUDENT
 
-    // FIND MATCHING RESULT
+        const studentResponse =
+            await fetch(
+                `https://pinnacle-backend-5i7n.onrender.com/api/student/${studentId}`
+            );
 
-    const matchedResult = allResults.find(result =>
+        const studentData =
+            await studentResponse.json();
 
-        result.student_id === studentId &&
-        result.dob === dob
+        if(
+            !studentData.success ||
+            !studentData.student
+        ){
 
-    );
+            showResultPopup(
+                "Student Not Found",
+                "Invalid Student ID."
+            );
 
-    // RESULT NOT FOUND
+            return;
+        }
+       // FETCH RESULT
+        const resultResponse =
+await fetch(
+`https://pinnacle-backend-5i7n.onrender.com/api/tests/result/${studentId}?dob=${encodeURIComponent(dob)}`
+);
+        const resultData =
+            await resultResponse.json();
 
-    if(!matchedResult){
+        if(
+            !resultData.success ||
+            !resultData.results ||
+            resultData.results.length === 0
+        ){
+
+            showResultPopup(
+                "Result Not Found",
+                "No result found."
+            );
+
+            return;
+        }
+
+        const matchedResult =
+            resultData.results[0];
+
+        const totalMarks =
+            matchedResult.total_marks;
+
+        const percentage =
+            (
+                matchedResult.score /
+                totalMarks
+            ) * 100;
+
+        let performanceMessage = "";
+
+        if(percentage >= 90){
+
+            performanceMessage =
+                "Outstanding Performance";
+
+        }else if(percentage >= 75){
+
+            performanceMessage =
+                "Excellent Performance";
+
+        }else if(percentage >= 60){
+
+            performanceMessage =
+                "Good Performance";
+
+        }else if(percentage >= 40){
+
+            performanceMessage =
+                "Average Performance";
+
+        }else{
+
+            performanceMessage =
+                "Needs Improvement";
+        }
 
         showResultPopup(
-            "Result Not Found",
-            "No result found for the entered Student ID and DOB."
+            "Result Found",
+            `
+            <div style="text-align:left;line-height:2;">
+
+                <h2 style="
+                    color:#f59e0b;
+                    text-align:center;
+                ">
+                    Pinnacle Scholars Academy
+                </h2>
+
+                <p>
+                    <strong>Student ID :</strong>
+                    ${matchedResult.student_id}
+                </p>
+
+                <p>
+                    <strong>Name :</strong>
+                    ${matchedResult.student_name}
+                </p>
+
+                <p>
+                    <strong>Test ID :</strong>
+                    ${matchedResult.test_id}
+                </p>
+
+                <p>
+                    <strong>Score :</strong>
+                    ${matchedResult.score}
+                </p>
+
+                <p>
+                    <strong>Percentage :</strong>
+                    ${percentage.toFixed(2)}%
+                </p>
+
+                <p>
+                    <strong>Performance :</strong>
+                    ${performanceMessage}
+                </p>
+
+                <p>
+                    <strong>Submitted On :</strong>
+                    ${matchedResult.submitted_at}
+                </p>
+
+            </div>
+            `
         );
 
-        return;
+    }catch(err){
+
+        console.error(err);
+
+        showResultPopup(
+            "Server Error",
+            "Unable to fetch result."
+        );
     }
-
-    // CALCULATE PERCENTAGE
-
-    const percentage =
-        (
-            (matchedResult.score / matchedResult.total) * 100
-        ).toFixed(2);
-
-    // PERFORMANCE MESSAGE
-
-    let performanceMessage = "";
-
-    if(percentage >= 90){
-
-        performanceMessage =
-            "Outstanding Performance";
-
-    }else if(percentage >= 75){
-
-        performanceMessage =
-            "Excellent Performance";
-
-    }else if(percentage >= 60){
-
-        performanceMessage =
-            "Good Performance";
-
-    }else if(percentage >= 40){
-
-        performanceMessage =
-            "Average Performance";
-
-    }else{
-
-        performanceMessage =
-            "Needs Improvement";
-    }
-
-    // SHOW RESULT
-
-    showResultPopup(
-
-        "Result Found",
-
-        `
-        <div style="text-align:left;line-height:2;">
-
-            <h2 style="
-                margin-top:0;
-                color:#f59e0b;
-                text-align:center;
-            ">
-                Pinnacle Scholars Academy
-            </h2>
-
-            <hr style="border-color:rgba(255,255,255,0.1);">
-
-            <p>
-                <strong>Student ID :</strong>
-                ${matchedResult.student_id}
-            </p>
-
-            <p>
-                <strong>Score :</strong>
-                ${matchedResult.score} / ${matchedResult.total}
-            </p>
-
-            <p>
-                <strong>Percentage :</strong>
-                ${percentage}%
-            </p>
-
-            <p>
-                <strong>Performance :</strong>
-                ${performanceMessage}
-            </p>
-
-            <p>
-                <strong>Submitted On :</strong>
-                ${matchedResult.submitted_at}
-            </p>
-
-            <hr style="border-color:rgba(255,255,255,0.1);">
-
-            <div style="
-                text-align:center;
-                margin-top:20px;
-                color:#93c5fd;
-                font-weight:bold;
-            ">
-                Result Verified Successfully
-            </div>
-
-        </div>
-        `
-    );
-
 }
-
 /* PROFESSIONAL RESULT POPUP */
 
 function showResultPopup(title, message){
