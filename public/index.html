@@ -27,19 +27,27 @@
         }
         
         [data-theme="light"]{
-    --primary:#ffffff;
+    --primary:#f5f7fa;
     --secondary:#1e40af;
-    --accent:#d97706;
-    /* Professional Executive Theme */
-    --grad-start:#f8fafc;
-    --grad-end:#e2e8f0;
-    --text-main:#1e293b;
+    --accent:#b45309;
+    --grad-start:#eef2f7;
+    --grad-end:#dbe4f0;
+    --text-main:#0f172a;
     --card-bg:#ffffff;
     --glass:rgba(255,255,255,.85);
-    --border:rgba(15,23,42,.08);
+    --border:rgba(15,23,42,.10);
     --shadow:0 10px 30px rgba(15,23,42,.08);
-    --watermark-color:rgba(15,23,42,.025);
+    --watermark-color:rgba(15,23,42,.03);
 }
+
+[data-theme="light"] body{
+    background:
+        radial-gradient(circle at top left, #c7d2fe 0%, transparent 30%),
+        radial-gradient(circle at bottom right, #bae6fd 0%, transparent 28%),
+        linear-gradient(180deg, #eef2f7 0%, #e2e8f0 60%, #cbd5e1 100%);
+    color:#0f172a;
+}
+
         
         *{
             margin:0;
@@ -58,26 +66,11 @@
             line-height:1.7;
         }
         
-        [data-theme="light"] body{
-    background: linear-gradient(180deg,
-            #f8fafc 0%,
-            #f1f5f9 40%,
-            #e2e8f0 100%
-        );
-    color:#1e293b;
-}
-
-        [data-theme="light"] header{
-
-    background:
-        rgba(255,255,255,.95);
-
-    border-bottom:
-        1px solid rgba(148,163,184,.15);
-
-    box-shadow:
-        0 4px 18px rgba(15,23,42,.06);
-}
+             [data-theme="light"] header{
+    background:linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-bottom:1px solid rgba(255,255,255,.08);
+    box-shadow:0 6px 22px rgba(15,23,42,.18);
+}   
 [data-theme="light"] .nav-links a{
     color:#0f172a;
 }
@@ -99,12 +92,21 @@
 }
 
 [data-theme="light"] .hero h1{
-    color:#0f172a;
-    text-shadow:none;
+    background:none !important;
+
+    -webkit-background-clip:initial !important;
+
+    -webkit-text-fill-color:#0f172a !important;
+
+    color:#0f172a !important;
+
+    text-shadow:
+        0 2px 6px rgba(255,255,255,.4);
 }
 
 [data-theme="light"] .hero p{
-    color:#334155;
+    color:#1e293b;
+    font-weight:600;
 }
 
         /* FIX: Isolated Watermark with 100% transparent click-through protection */
@@ -272,16 +274,9 @@
         0 0 12px rgba(255,255,255,.8);
 }   
 [data-theme="light"] .nav-links{
-
-    background:
-        rgba(255,255,255,.85);
-
-    border:
-        1px solid rgba(148,163,184,.15);
-
-    box-shadow:
-        0 8px 25px rgba(15,23,42,.08);
-
+    background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.15);
+    box-shadow:0 6px 20px rgba(0,0,0,.20);
 }
 [data-theme="light"] .nav-links::after{
 
@@ -363,7 +358,7 @@
     position:sticky;
     top:89px; /* header height */
     z-index:999;
-
+            max-width: 100vw;
     height:46px;
 
     background:linear-gradient(90deg,#0f172a,#1e293b);
@@ -468,6 +463,26 @@
 
     border-bottom:
         1px solid rgba(255,255,255,.05);
+}
+[data-theme="light"] #overview{
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #f8fafc 100%
+        );
+}
+[data-theme="light"] #overview h2{
+    color:#0f172a !important;
+
+    -webkit-text-fill-color:#0f172a !important;
+
+    background:none !important;
+
+    font-weight:900;
+}
+[data-theme="light"] #overview p{
+    color:#334155 !important;
 }
         .hero::before{
     content:"";
@@ -939,6 +954,7 @@
 .portal-bg-blocks {
     position: absolute;
     inset: 0;
+    display:none;
     z-index: 1;
     pointer-events: none; /* CRITICAL: Allows clicks to pass right through to buttons */
 }
@@ -966,6 +982,21 @@
     box-shadow:
         0 0 25px rgba(37,99,235,.12);
 }
+.hero h1{
+    font-size:2rem;
+    line-height:1.3;
+}
+
+#overview h2{
+    font-size:1.8rem;
+    line-height:1.4;
+    margin-bottom:28px;
+}
+
+#overview p{
+    font-size:1rem;
+    line-height:1.8;
+}
 /* Light mode adjustments so blocks remain ultra-subtle */
 [data-theme="light"] .p-block {
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.01));
@@ -974,16 +1005,16 @@
 
 /* Individual Block Configs: Sizing, Starting Positions, and Speed variations */
 .block-1 {
-    width: 120px;
-    height: 120px;
+    width: 60px;
+    height: 60px;
     top: 10%;
     left: 10%;
     animation-duration: 25s;
 }
 
 .block-2 {
-    width: 180px;
-    height: 180px;
+    width: 90px;
+    height: 90px;
     bottom: -20px;
     right: 15%;
     animation-duration: 35s;
@@ -992,8 +1023,8 @@
 }
 
 .block-3 {
-    width: 90px;
-    height: 90px;
+    width: 50px;
+    height: 50px;
     top: 40%;
     right: 25%;
     animation-duration: 18s;
@@ -1057,7 +1088,7 @@
 
     .hero{
         min-height:100vh;
-        padding:120px 20px 70px;
+        padding:90px 18px 60px;
     }
 
     .hero h1{
@@ -1086,7 +1117,7 @@
         top:auto;
         right:auto;
         transform:none;
-        margin-bottom:35px;
+        margin:25px auto 0;
         animation:floatTablet 4s ease-in-out infinite;
     }
 
@@ -1311,9 +1342,9 @@
     background:
         linear-gradient(
             135deg,
-            #050816,
-            #0b1633,
-            #101d42
+            #49ea9d,
+            #29a4cd,
+            #46ea9d,
         );
     display:flex;
     justify-content:center;
@@ -1324,6 +1355,7 @@
 .visitor-overlay{
     position:absolute;
     width:180%;
+    opacity: .45;
     height:180%;
     background:
         radial-gradient(
@@ -1350,16 +1382,19 @@
 }
 
 .visitor-title{
-    font-size:1.7rem;
-    font-weight:700;
+    font-size:2rem;
+    font-weight:800;
     color:#ffffff;
     margin-bottom:12px;
     animation:fadeUp 1s ease;
+     text-shadow:
+        0 0 15px rgba(255,255,255,.25),
+        0 0 30px rgba(37,99,235,.35);
 }
 
 .visitor-subtitle{
     color:#c7d4ff;
-    font-size:1rem;
+    font-size:1.05rem;
     margin-bottom:20px;
     animation:fadeUp 1.2s ease;
 }
@@ -1862,6 +1897,31 @@ BARS GO BACK UP
         height:400px;
     }
 }
+html, body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+}
+
+section, header, .hero, .portal-links, footer{
+    max-width:100%;
+    box-sizing:border-box;
+}
+img, iframe, video{
+    max-width:100%;
+    height:auto;
+    display:block;
+}
+.overview-highlight{
+    font-size:1.2rem;
+    color:var(--secondary);
+    font-weight:700;
+    margin-top:15px;
+}
+
+[data-theme="light"] .overview-highlight{
+    color:#1d4ed8;
+}
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -2047,7 +2107,7 @@ PPT OPENING DOORS
 <section id="overview" style="text-align: center; padding-bottom: 30px;">
     <div data-aos="fade-up" style="max-width: 800px; margin: 0 auto;">
         <h2>Why Pinnacle Scholars Academy?</h2>
-        <p style="font-size: 1.2rem; color: var(--secondary); font-weight: 600; margin-top: 15px;">Noida's Premier Hub for Academic Breakthroughs and Competitive Mastery.</p>
+        <p class="overview-highlight">Noida's Premier Hub for Academic Breakthroughs and Competitive Mastery.</p>
         <p style="font-size: 1.05rem; margin-bottom: 40px;">
             At Pinnacle Scholars Academy, we don't just teach—we build paths to premier institutions. By combining rigorous conceptual frameworks with real-time analytics, competitive testing systems, and elite mentorship from top-tier academic experts, we bridge the gap between high potential and legendary results. Whether you are cracking national-level engineering ranks or pioneering advanced M.Tech specializations, your peak performance begins here.
         </p>
