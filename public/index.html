@@ -1038,8 +1038,8 @@
 
 /* Individual Block Configs: Sizing, Starting Positions, and Speed variations */
 .block-1 {
-    width: 80px;
-    height: 80px;
+    width: 170px;
+    height: 170px;
     top: 10%;
     left: 10%;
     animation-duration: 25s;
@@ -2270,7 +2270,7 @@ PPT OPENING DOORS
         </div>
         <div class="card" data-aos="fade-left">
             <h3>Institute Norms</h3>
-            <p>95% attendance requirement, strictly enforced academic integrity, and professional conduct code for all students.</p>
+            <p>92% attendance requirement, strictly enforced academic integrity, and professional conduct code for all students.</p>
         </div>
     </div>
 </section>
@@ -3032,7 +3032,7 @@ async function startTest(domain) {
             // ELIGIBILITY CHECK
 
             const eligibilityResponse = await fetch(
-                `https://pinnacle-backend-5i7n.onrender.com/api/tests/student-eligible/${studentId}`
+                `https://pinnacle-backend-5i7n.onrender.com/api/tests/student-eligible/${studentId}?dob=${encodeURIComponent(dob)}`
             );
 
             if(!eligibilityResponse.ok){
@@ -3044,18 +3044,40 @@ async function startTest(domain) {
 
             if(!eligibilityData.eligible){
 
-                status.style.display = "none";
+    status.style.display = "none";
 
-                alert(
-                    `You are not eligible for monthly test.\n\nRemaining Days : ${eligibilityData.remainingDays}`
-                );
+    if(eligibilityData.message){
 
-                return;
-            }
+        alert(eligibilityData.message);
+
+    }else{
+
+        alert(
+            `You are not eligible for monthly test.\n\nRemaining Days : ${eligibilityData.remainingDays}`
+        );
+    }
+
+    return;
+}
 
             status.innerHTML =
                 "Eligibility verified. Fetching test...";
+            // calls student api for student name
+                const studentResponse =
+await fetch(
+`https://pinnacle-backend-5i7n.onrender.com/api/student/${studentId}`
+);
 
+const studentData =
+await studentResponse.json();
+
+if(studentData.success){
+
+    localStorage.setItem(
+        "active_student_name",
+        studentData.student.name
+    );
+}
             // FETCH TEST
 
             const response = await fetch(
@@ -3379,7 +3401,7 @@ async function showTestInterface(testObject) {
         });
         // SAVE RESULT
         try{
-
+            const totalMarks = parsedQuestions.length * 4;
     const saveResponse =
     await fetch(
 
@@ -3403,7 +3425,9 @@ async function showTestInterface(testObject) {
             test_id:
             testObject.test_id,
 
-            score
+            score,
+
+            total_marks: totalMarks
         })
     });
 

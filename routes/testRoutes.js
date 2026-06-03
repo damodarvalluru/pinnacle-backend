@@ -13,16 +13,17 @@ router.post('/publish-test', async (req, res) => {
             title,
             questions
         } = req.body;
-        if(
+       if(
     !test_type ||
     !faculty_id ||
     !faculty_name ||
     !title ||
-    !questions
+    !Array.isArray(questions) ||
+    questions.length === 0
 ){
     return res.status(400).json({
         success:false,
-        message:"Missing Required Fields"
+        message:"Questions Required"
     });
 }
         const testId =
@@ -75,16 +76,28 @@ router.get('/student-eligible/:studentId', async (req, res) => {
 
         const dob = req.query.dob;
 
-const [students] = await db.execute(`SELECT * FROM students WHERE student_id = ? AND dob = ?`,[studentId,dob]);
+        const [students] = await db.execute(
+    `SELECT * FROM students WHERE student_id = ?`,
+    [studentId]
+);
 
-        if (students.length === 0) {
-            return res.json({
-                eligible: false,
-                message: 'Student Not Found'
-            });
-        }
+if(students.length === 0){
+
+    return res.json({
+        eligible:false,
+        message:"InvalidStudent ID"
+    });
+}
 
         const student = students[0];
+
+        if(student.dob !== dob){
+
+    return res.json({
+        eligible:false,
+        message:"Incorrect Date of Birth"
+    });
+}
 
         const enrollDate =
             new Date(student.enrollment_date);
@@ -102,6 +115,7 @@ const [students] = await db.execute(`SELECT * FROM students WHERE student_id = ?
         if (days >= 60) {
 
             res.json({
+                success:true,
                 eligible: true,
                 days
             });
@@ -109,6 +123,7 @@ const [students] = await db.execute(`SELECT * FROM students WHERE student_id = ?
         } else {
 
             res.json({
+                success:true,
                 eligible: false,
                 remainingDays: 60 - days
             });
@@ -148,6 +163,29 @@ if(
     return res.status(400).json({
         success:false,
         message:"Missing Required Fields"
+    });
+}
+const [existing] =
+await db.execute(
+
+`SELECT result_id
+ FROM test_results
+ WHERE student_id=?
+ AND test_id=?`,
+
+[
+    student_id,
+    test_id
+]
+);
+
+if(existing.length){
+
+    return res.json({
+
+        success:false,
+        message:
+        "Result Already Submitted"
     });
 }
         await db.execute(
@@ -228,7 +266,7 @@ router.get('/result/:studentId', async (req, res) => {
             `SELECT *
              FROM test_results
              WHERE student_id = ?
-             ORDER BY submitted_at DESC LIMIT 1`,
+             ORDER BY submitted_at DESC `,
 
             [studentId]
         );
