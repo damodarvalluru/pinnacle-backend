@@ -85,13 +85,16 @@ if(students.length === 0){
 
     return res.json({
         eligible:false,
-        message:"InvalidStudent ID"
+        message:"Student ID not found"
     });
 }
 
         const student = students[0];
-
-        if(student.dob !== dob){
+    const dbDob =
+new Date(student.dob)
+.toISOString()
+.split("T")[0];
+        if(dbDob !== dob){
 
     return res.json({
         eligible:false,
