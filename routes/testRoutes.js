@@ -76,6 +76,8 @@ router.get('/student-eligible/:studentId', async (req, res) => {
 
         const dob = req.query.dob;
 
+        const domain = req.query.domain;
+
         const [students] = await db.execute(
     `SELECT * FROM students WHERE student_id = ?`,
     [studentId]
@@ -90,6 +92,29 @@ if(students.length === 0){
 }
 
         const student = students[0];
+        if(
+domain === "jee" &&
+!student.domain.includes("JEE")
+){
+
+    return res.json({
+        eligible:false,
+        message:
+        "You are not enrolled in JEE program"
+    });
+}
+
+if(
+domain === "gate" &&
+!student.domain.includes("MTECH")
+){
+
+    return res.json({
+        eligible:false,
+        message:
+        "You are not enrolled in GATE program"
+    });
+}
     const dbDob =
 new Date(student.dob)
 .toISOString()
@@ -289,6 +314,65 @@ router.get('/result/:studentId', async (req, res) => {
         });
     }
 });
+
+router.get('/latest/:type',async(req,res)=>{
+
+try{
+
+    const type =
+    req.params.type;
+
+    const [tests] =
+    await db.execute(
+
+    `
+    SELECT *
+    FROM tests
+    WHERE test_type=?
+    ORDER BY published_at DESC
+    LIMIT 1
+    `,
+    [type]
+    );
+
+    if(!tests.length){
+
+        return res.json({
+            success:false,
+            message:"No Test Published"
+        });
+    }
+
+    const test =
+    tests[0];
+
+    try{
+        test.questions =
+        JSON.parse(
+            test.questions
+        );
+    }
+    catch{}
+
+    res.json({
+        success:true,
+        test
+    });
+
+}
+catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+        success:false,
+        message:
+        "Unable To Fetch Test"
+    });
+}
+
+});
+
 // FETCH TESTS BY TYPE
 router.get('/:type', async (req, res) => {
 

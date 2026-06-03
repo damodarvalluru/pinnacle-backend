@@ -2700,6 +2700,116 @@ Remaining Fees: ₹${remainingFees}
 }
 
 async function startTest(domain) {
+    
+    const examConfig = {
+
+    jee: {
+
+        portalTitle:
+        "JEE Monthly Test Portal",
+
+        instructions: `
+        <li>Total Questions : <b>75 Questions</b></li>
+
+        <li>
+        Physics → 25 Questions
+        (20 MCQ + 5 Numerical)
+        </li>
+
+        <li>
+        Chemistry → 25 Questions
+        (20 MCQ + 5 Numerical)
+        </li>
+
+        <li>
+        Mathematics → 25 Questions
+        (20 MCQ + 5 Numerical)
+        </li>
+
+        <li>
+        Questions appear continuously :
+        Physics → Chemistry → Maths
+        </li>
+
+        <li>
+        MCQ Correct Answer :
+        <b>+4 Marks</b>
+        </li>
+
+        <li>
+        MCQ Wrong Answer :
+        <b>-1 Negative Marking</b>
+        </li>
+
+        <li>
+        Numerical Questions :
+        <b>+4 Marks</b>
+        and
+        <b>No Negative Marking</b>
+        </li>
+
+        <li>
+        Student can attempt questions in any order.
+        </li>
+
+        <li>
+        Student ID & DOB required.
+        </li>
+        `
+    },
+
+    gate: {
+
+        portalTitle:
+        "GATE Monthly Test Portal",
+
+        instructions: `
+        <li>Total Questions : <b>65 Questions</b></li>
+
+        <li>
+        General Aptitude →
+        10 Questions
+        </li>
+
+        <li>
+        Core Subject →
+        55 Questions
+        </li>
+
+        <li>
+        1 Mark Questions :
+        <b>+1</b>
+        </li>
+
+        <li>
+        2 Mark Questions :
+        <b>+2</b>
+        </li>
+
+        <li>
+        MCQ Negative Marking Applicable
+        </li>
+
+        <li>
+        Numerical Questions :
+        No Negative Marking
+        </li>
+
+        <li>
+        Total Marks :
+        <b>100</b>
+        </li>
+
+        <li>
+        Student can attempt questions in any order.
+        </li>
+
+        <li>
+        Student ID & DOB required.
+        </li>
+        `
+    }
+};
 
     const existingPortal = document.getElementById("ultimateJeePortal");
     if(existingPortal) existingPortal.remove();
@@ -2903,7 +3013,7 @@ async function startTest(domain) {
 
     <div class="jee-card">
 
-        <h1>JEE Monthly Test Portal</h1>
+        <h1>${examConfig[domain].portalTitle}</h1>
 
         <p>
             Read all instructions carefully before proceeding.
@@ -2915,57 +3025,9 @@ async function startTest(domain) {
 
             <ul>
 
-                <li>
-                    Total Questions : <b>75 Questions</b>
-                </li>
+${examConfig[domain].instructions}
 
-                <li>
-                    Physics → 25 Questions
-                    (20 MCQ + 5 Numerical)
-                </li>
-
-                <li>
-                    Chemistry → 25 Questions
-                    (20 MCQ + 5 Numerical)
-                </li>
-
-                <li>
-                    Mathematics → 25 Questions
-                    (20 MCQ + 5 Numerical)
-                </li>
-
-                <li>
-                    Questions appear continuously :
-                    Physics → Chemistry → Maths
-                </li>
-
-                <li>
-                    MCQ Correct Answer :
-                    <b>+4 Marks</b>
-                </li>
-
-                <li>
-                    MCQ Wrong Answer :
-                    <b>-1 Negative Marking</b>
-                </li>
-
-                <li>
-                    Numerical Questions :
-                    <b>+4 Marks</b> and
-                    <b>No Negative Marking</b>
-                </li>
-
-                <li>
-                    Student can attempt questions in any order.
-                </li>
-
-                <li>
-                    Your Student ID & DOB are required
-                    for result verification and result portal.
-                </li>
-
-            </ul>
-
+</ul>
         </div>
 
         <div class="verify-section">
@@ -3031,9 +3093,12 @@ async function startTest(domain) {
 
             // ELIGIBILITY CHECK
 
-            const eligibilityResponse = await fetch(
-                `https://pinnacle-backend-5i7n.onrender.com/api/tests/student-eligible/${studentId}?dob=${encodeURIComponent(dob)}`
-            );
+            const eligibilityResponse =
+await fetch(
+
+`https://pinnacle-backend-5i7n.onrender.com/api/tests/student-eligible/${studentId}?dob=${encodeURIComponent(dob)}&domain=${domain}`
+
+);
 
             if(!eligibilityResponse.ok){
                 throw new Error("Eligibility API Failed");
@@ -3081,24 +3146,27 @@ if(studentData.success){
             // FETCH TEST
 
             const response = await fetch(
-                `https://pinnacle-backend-5i7n.onrender.com/api/tests/${domain}`
+                `https://pinnacle-backend-5i7n.onrender.com/api/tests/latest/${domain}`
             );
 
             if(!response.ok){
                 throw new Error("Test API Failed");
             }
 
-            const tests = await response.json();
+            const data =
+await response.json();
 
-            if(tests.length === 0){
+if(!data.success){
 
-                alert("No tests are published yet.");
+    alert(
+        data.message
+    );
 
-                return;
-            }
+    return;
+}
 
-            const latestTest = tests[0];
-
+const latestTest =
+data.test;
             document
             .getElementById("ultimateJeePortal")
             .remove();
@@ -3339,7 +3407,17 @@ async function showTestInterface(testObject) {
 
     <div class="test-header">
 
-        <h1>${testObject.title}</h1>
+        <div>
+    <h1>${testObject.title}</h1>
+    <div id="testTimer"
+         style="
+            color:#00d9ff;
+            font-weight:bold;
+            margin-top:5px;
+         ">
+         03:00:00
+    </div>
+</div>
 
         <button class="submit-btn" id="submitTestBtn">
             Submit Test
@@ -3355,13 +3433,56 @@ async function showTestInterface(testObject) {
     `;
 
     document.body.appendChild(wrapper);
+    window.onbeforeunload = function () {
+    return "Your test is still in progress.";
+};
+let timeLeft = 180 * 60;
 
-    // SUBMIT
+const timer = setInterval(() => {
 
+    const hrs =
+        Math.floor(timeLeft / 3600);
+
+    const mins =
+        Math.floor((timeLeft % 3600) / 60);
+
+    const secs =
+        timeLeft % 60;
+
+    document.getElementById(
+        "testTimer"
+    ).innerHTML =
+    `${String(hrs).padStart(2,'0')}:${
+        String(mins).padStart(2,'0')
+    }:${
+        String(secs).padStart(2,'0')
+    }`;
+
+    if(timeLeft <= 0){
+
+        clearInterval(timer);
+
+        document
+        .getElementById("submitTestBtn")
+        .click();
+    }
+
+    timeLeft--;
+
+},1000);
+// SUBMIT
     document
     .getElementById("submitTestBtn")
     .addEventListener("click", async function(){
+        const submitBtn =
+document.getElementById(
+    "submitTestBtn"
+);
 
+submitBtn.disabled = true;
+
+submitBtn.innerHTML =
+"Submitting...";
         let score = 0;
 
         parsedQuestions.forEach((q,index)=>{
@@ -3440,7 +3561,8 @@ async function showTestInterface(testObject) {
             "Result save failed"
         );
     }
-
+    clearInterval(timer);
+    window.onbeforeunload = null;
     alert(
         `Test Submitted Successfully\n\nScore : ${score}`
     );
@@ -3449,6 +3571,10 @@ async function showTestInterface(testObject) {
 
 }
 catch(err){
+    submitBtn.disabled = false;
+
+submitBtn.innerHTML =
+"Submit Test";
     console.error(err);
     alert(
         "Database save failed.\nContact administrator."
