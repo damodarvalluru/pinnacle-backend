@@ -636,34 +636,46 @@ const timeoutId = setTimeout(() => {
     return;
 }
                     console.log("Verification Result:", verificationResult);
-                    const updatedRemaining =
-verificationResult.remainingFees ??
-(
-    parseFloat(currentStudent.totalFees || 0)
-    -
-    (
-        parseFloat(currentStudent.feesPaid || 0)
-        +
-        parseFloat(amountInINR || 0)
-    )
-);
+                    const updatedPaid =
+    verificationResult.paidFees;
+
+const updatedRemaining =
+    verificationResult.remainingFees;
                     if (verificationResult.success) {
-                        payBtn.disabled = false;
 
-payBtn.innerText = "Continue Payment";
+    currentStudent.feesPaid =
+        verificationResult.paidFees;
+
+    currentStudent.remainingFees =
+        verificationResult.remainingFees;
+
+    document.getElementById('sPaid').innerText =
+        verificationResult.paidFees;
+
+    document.getElementById('sRemain').innerText =
+        verificationResult.remainingFees;
+
+    payBtn.disabled = false;
+
+    payBtn.innerText = "Continue Payment";
+
     alert(
-"Payment Successful!\n\n" +
+        "Payment Successful!\n\n" +
 
-"Payment ID: " +
-paymentReceipt.razorpay_payment_id +
+        "Payment ID: " +
+        paymentReceipt.razorpay_payment_id +
 
-"\n\nPaid Amount: ₹" +
-amountInINR+
+        "\n\nTotal Fees: ₹" +
+        verificationResult.totalFees +
 
-"\n\nRemaining Fees: ₹" +
-updatedRemaining
-);
-   await fetchStudentDetails();
+        "\n\nPaid Fees: ₹" +
+        verificationResult.paidFees +
+
+        "\n\nRemaining Fees: ₹" +
+        verificationResult.remainingFees
+    );
+
+    await fetchStudentDetails();
 }
                     else {
                         payBtn.disabled = false;

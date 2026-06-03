@@ -114,9 +114,10 @@ try {
         parseFloat(paid_amount);
 
     const updatedRemaining =
-        parseFloat(student.total_fees)
-        -
-        updatedPaid;
+        Math.max(
+        0,
+        parseFloat(student.total_fees) - updatedPaid
+    );
 
     /*
     UPDATE FEES
@@ -168,9 +169,18 @@ try {
     await connection.commit();
 
     res.json({
-        success: true,
-        message: 'Payment Verified'
-    });
+    success: true,
+    message: 'Payment Verified',
+
+    totalFees:
+        parseFloat(student.total_fees),
+
+    paidFees:
+        updatedPaid,
+
+    remainingFees:
+        updatedRemaining
+});
 
 } catch(transactionError) {
 
