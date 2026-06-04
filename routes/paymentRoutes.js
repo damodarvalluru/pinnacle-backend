@@ -108,15 +108,35 @@ try {
 
     const student = studentRows[0];
 
-    const updatedPaid =
-        parseFloat(student.fees_paid)
-        +
-        parseFloat(paid_amount);
+    const currentPaid =
+    Number(student.fees_paid || 0);
+
+const totalFees =
+    Number(student.total_fees || 0);
+
+const paymentAmount =
+    Number(paid_amount || 0);
+
+const updatedPaid =
+    currentPaid + paymentAmount;
+
+if (updatedPaid > totalFees) {
+
+    await connection.rollback();
+
+    return res.status(400).json({
+
+        success:false,
+
+        message:
+        "Payment exceeds remaining fees"
+    });
+}
 
     const updatedRemaining =
         Math.max(
         0,
-        parseFloat(student.total_fees) - updatedPaid
+        Number(student.total_fees || 0) - updatedPaid
     );
 
     /*
@@ -168,20 +188,44 @@ try {
 
     await connection.commit();
 
+    const [updatedRows] =
+await connection.query(
+
+    `SELECT
+        total_fees,
+        fees_paid,
+        remaining_fees
+     FROM students
+     WHERE student_id = ?`,
+
+    [student_id]
+);
+
+const updatedStudent =
+    updatedRows[0];
+
     res.json({
+
     success: true,
-    message: 'Payment Verified',
+
+    message:
+        'Payment Verified',
 
     totalFees:
-        parseFloat(student.total_fees),
+        Number(
+            updatedStudent.total_fees
+        ),
 
     paidFees:
-        updatedPaid,
+        Number(
+            updatedStudent.fees_paid
+        ),
 
     remainingFees:
-        updatedRemaining
+        Number(
+            updatedStudent.remaining_fees
+        )
 });
-
 } catch(transactionError) {
 
     await connection.rollback();

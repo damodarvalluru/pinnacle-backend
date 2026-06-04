@@ -413,16 +413,29 @@ fetchBtn.innerText = "Fetch Details";
 
         const student = data.student;
 
-        currentStudent = student;
+        currentStudent = {
 
-        const totalFees =
-        parseFloat(student.totalFees) || 50000;
+    ...student,
 
-        const paidFees =
-        parseFloat(student.feesPaid) || 0;
+    totalFees:
+        Number(student.total_fees
+        ) || 0,
 
-        const remainingFees =
-Math.max(0, totalFees - paidFees);
+    feesPaid:
+        Number(
+            student.fees_paid
+        ) || 0,
+
+    remainingFees:
+        Number(student.remaining_fees || 0)
+};
+        
+
+        const totalFees = currentStudent.totalFees;
+
+        const paidFees = currentStudent.feesPaid;
+
+        const remainingFees = currentStudent.remainingFees;
 
         document.getElementById('sName')
         .innerText = student.name;
@@ -492,10 +505,10 @@ payBtn.innerText = "Processing...";
     }
 
     const totalFees=
-    parseFloat(currentStudent.totalFees);
+    Number(currentStudent.totalFees) || 0;
 
     const paidFees=
-    parseFloat(currentStudent.feesPaid)||0;
+    Number(currentStudent.feesPaid)||0;
 
     const remainingFees =
 Math.max(0, totalFees - paidFees);
@@ -644,16 +657,16 @@ const updatedRemaining =
                     if (verificationResult.success) {
 
     currentStudent.feesPaid =
-        verificationResult.paidFees;
+        Number(verificationResult.paidFees);
 
     currentStudent.remainingFees =
-        verificationResult.remainingFees;
+        Number(verificationResult.remainingFees);
 
     document.getElementById('sPaid').innerText =
-        verificationResult.paidFees;
+        currentStudent.feesPaid;
 
     document.getElementById('sRemain').innerText =
-        verificationResult.remainingFees;
+        currentStudent.remainingFees;
 
     payBtn.disabled = false;
 
@@ -675,7 +688,11 @@ const updatedRemaining =
         verificationResult.remainingFees
     );
 
+setTimeout(async () => {
+
     await fetchStudentDetails();
+
+}, 1000);
 }
                     else {
                         payBtn.disabled = false;
