@@ -11,6 +11,94 @@ function toggleTheme() {
         }
     }
 
+function startWelcomeTyping(){
+
+    const message =
+
+`Dear ladies and gentlemen,
+
+Welcome to Noida's Pinnacle Scholars Academy.
+
+Where excellence meets innovation,
+dreams become achievements,
+and future leaders are created.
+
+Empowering students with knowledge,
+discipline, and confidence
+for a brighter tomorrow.
+
+Nurturing creativity, leadership,
+and academic excellence
+in every learner.
+
+Building a strong foundation
+for success in education and life.
+
+We are delighted to welcome you.`;
+
+    const target =
+        document.getElementById(
+            "typingMessage"
+        );
+
+    if(!target) return;
+
+    let index = 0;
+
+    target.innerHTML = "";
+
+    function typeCharacter(){
+
+        if(index < message.length){
+
+            target.innerHTML +=
+                message.charAt(index);
+
+            index++;
+
+            setTimeout(
+                typeCharacter,
+                85
+            );
+        } else {
+            startIntroAnimations();
+        }
+    }
+
+    typeCharacter();
+}
+
+function startIntroAnimations(){
+
+    const intro =
+        document.getElementById("welcomeIntro");
+
+    if(!intro) return;
+
+    setTimeout(() => {
+        intro.classList.add("drop-bars");
+    }, 500);
+
+    setTimeout(() => {
+        intro.classList.add("open-bars");
+    }, 2500);
+
+    setTimeout(() => {
+        intro.classList.add("show-ppt");
+    }, 4000);
+
+    setTimeout(() => {
+        intro.classList.add("open-ppt");
+    }, 5500);
+
+    setTimeout(() => {
+
+        intro.classList.add("hide");
+
+        document.body.style.overflow = "auto";
+
+    }, 8000);
+}
 
 function navigateTo(target) {
         if (target === 'student') window.location.href = 'student-portal.html'; 
@@ -1816,34 +1904,7 @@ const timer = setInterval(()=>{count += increment;
 
 // Welcome Intro Animation Sequence
 window.addEventListener("load", () => {
-
-    const intro =
-        document.getElementById("welcomeIntro");
-
-    if (!intro) return;
-
-    setTimeout(() => {
-        intro.classList.add("drop-bars");
-    }, 6500);
-
-    setTimeout(() => {
-        intro.classList.add("open-bars");
-    }, 8500);
-
-    setTimeout(() => {
-        intro.classList.add("show-ppt");
-    }, 9800);
-
-    setTimeout(() => {
-        intro.classList.add("open-ppt");
-    }, 11300);
-
-    setTimeout(() => {
-        intro.classList.add("hide");
-
-        document.body.style.overflow = "auto";
-    }, 12800);
-
+    startWelcomeTyping();   
 });
 
 

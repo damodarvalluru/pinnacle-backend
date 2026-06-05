@@ -576,7 +576,7 @@
         }
         
         .hero h1{
-    font-size:4.5rem;
+    font-size:10rem;
     font-weight:900;
 
     background:
@@ -2045,5 +2045,36 @@ PDF / PRINT OPTIMIZATION
 
         width:100px !important;
         height:100px !important;
+    }
+}
+
+#typingMessage{
+
+    color:white;
+
+    font-size:1.1rem;
+
+    line-height:1.8;
+
+    min-height:250px;
+
+    white-space:pre-line;
+}
+
+/* Blinking Cursor */
+
+#typingMessage::after{
+
+    content:"|";
+
+    animation:blink 0.8s infinite;
+
+    color:#38bdf8;
+}
+
+@keyframes blink{
+
+    50%{
+        opacity:0;
     }
 }
