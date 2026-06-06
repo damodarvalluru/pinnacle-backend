@@ -1,0 +1,454 @@
+ :root {
+            --text-color: #f8fafc;
+            --accent-color: #ed8936; /* Golden-Orange */
+            --card-bg-start: rgba(255, 255, 255, 0.92);
+            --card-bg-end: rgba(248, 250, 252, 0.85);
+            --card-border: rgba(255, 255, 255, 0.25);
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --input-border: #cbd5e1;
+            --button-gradient-start: #f6ad55;
+            --button-gradient-end: #ed8936;
+        }
+
+       body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column; /* Organizes elements cleanly from top to bottom */
+    justify-content: space-between; /* Pushes the central node middle and footer down */
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0b1329; 
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 20px 0; /* Creates breathing room at top and bottom margins */
+}
+
+        /* Professional Academic Background Canvas */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -3;
+            background: 
+                radial-gradient(circle at 70% 30%, rgba(30, 41, 59, 0.6) 0%, #0f172a 70%),
+                radial-gradient(circle at 20% 80%, rgba(237, 137, 54, 0.08) 0%, transparent 40%);
+        }
+
+        /* Abstract Mathematical Grid & Constellations Overlay */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: -100px;
+            z-index: -2;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Background Graphics Layer (Formulas, Vectors, and Analytics) */
+        .bg-objects {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .math-formula {
+            position: absolute;
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.05);
+            user-select: none;
+        }
+        .math-1 { top: 12%; left: 8%; font-size: 1.5rem; }
+        .math-2 { bottom: 15%; left: 10%; font-size: 1.4rem; }
+        .math-3 { top: 20%; right: 12%; font-size: 1.6rem; }
+        .math-4 { bottom: 25%; right: 15%; font-size: 1.3rem; }
+
+        .geo-object {
+            position: absolute;
+            opacity: 0.08;
+            stroke: #fff;
+            fill: none;
+            stroke-width: 1;
+        }
+        .cone { top: 25%; left: 6%; width: 120px; height: 120px; }
+        .sphere { bottom: 10%; left: 25%; width: 90px; height: 90px; }
+        .analytics { bottom: 18%; right: 5%; width: 180px; height: 120px; }
+        .compass { top: 15%; right: 8%; width: 100px; height: 100px; opacity: 0.15; }
+
+        /* Unique Core Animation: Fluid Orbital Glow behind the card */
+        .portal-glow-ring {
+            position: absolute;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            background: transparent;
+            border: 2px dashed rgba(237, 137, 54, 0.25);
+            z-index: 1;
+            pointer-events: none;
+            animation: orbitalRotate 35s linear infinite;
+        }
+
+        .portal-glow-ring::before {
+            content: "";
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--accent-color), 0 0 30px var(--accent-color);
+        }
+
+        /* The Premium Frosted Card Structure */
+        .card {
+            background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 45px 40px;
+            border-radius: 24px;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.4),
+                inset 0 0 0 1px var(--card-border);
+            width: 420px;
+            box-sizing: border-box;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            
+            /* Professional Entry Animation: Assembles securely from depth */
+            animation: cardSecureEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Academic Astrolabe Accent Icons in Corners */
+        .card::before {
+            content: "⚛";
+            position: absolute;
+            top: 20px;
+            left: 24px;
+            font-size: 1.6rem;
+            color: rgba(15, 23, 42, 0.2);
+            font-weight: normal;
+        }
+
+        .card::after {
+            content: "🧭";
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-size: 1.4rem;
+            color: rgba(15, 23, 42, 0.2);
+        }
+
+        h2 {
+            color: #0f172a;
+            font-size: 2.1rem;
+            font-weight: 800;
+            margin: 0 0 4px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: #ff9233;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0 0 25px 0;
+        }
+
+        .info-text {
+            color: #475569;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 6px;
+            padding-left: 2px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            color: #0f172a;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(237, 137, 54, 0.15);
+            outline: none;
+        }
+
+        /* Elegant View Button matching the metallic gold styling in image */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 50%, #dd6b20 100%);
+            color: white;
+            border: none;
+            border-radius: 50px; /* Pillow oval styling matches preview perfectly */
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(237, 137, 54, 0.35);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 26px rgba(237, 137, 54, 0.45);
+            filter: brightness(1.05);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 22px;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .back:hover {
+            color: var(--accent-color);
+        }
+
+        /* High-End Decorative Ring Accents Inside Card Base */
+        .card-footer-decor {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            opacity: 0.15;
+            font-size: 1.2rem;
+        }
+
+        /* Animation Keyframe Parameters */
+        @keyframes cardSecureEntry {
+            0% {
+                transform: scale(0.92) translateY(30px);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes orbitalRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Keeps the central card node completely floating in the sweet spot */
+.card-wrapper {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Cleaner layout metrics for your footer copyright string */
+footer {
+    width: 100%;
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+}
+
+footer p {
+    margin: 0;
+    color: white; /* Translucent bright silver text prevents blinding white glare */
+    font-size: x-large !important; /* Standard technical UI sizing fits the premium design style */
+    letter-spacing: 0.5px;
+}
+
+/* RESULT POPUP */
+
+#resultPopupOverlay{
+
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.75);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999999;
+
+    backdrop-filter:blur(10px);
+
+    animation:fadeIn 0.4s ease;
+}
+
+#resultPopupBox{
+
+    position:relative;
+    width:90%;
+    max-width:520px;
+
+    background:
+    linear-gradient(
+        135deg,
+        rgba(15,23,42,0.95),
+        rgba(30,41,59,0.92)
+    );
+
+    border-radius:24px;
+
+    padding:35px;
+
+    color:white;
+
+    box-shadow:
+    0 20px 60px rgba(0,0,0,0.5);
+
+    overflow:hidden;
+
+    animation:popupEntry 0.5s ease;
+}
+
+.popup-glow{
+
+    position:absolute;
+
+    width:260px;
+    height:260px;
+
+    background:
+    radial-gradient(
+        circle,
+        rgba(245,158,11,0.25),
+        transparent
+    );
+
+    top:-100px;
+    right:-100px;
+
+    pointer-events:none;
+}
+
+#resultPopupBox h1{
+
+    margin-top:0;
+
+    text-align:center;
+
+    color:#f59e0b;
+
+    margin-bottom:20px;
+}
+
+.popup-content{
+
+    color:#e2e8f0;
+
+    font-size:15px;
+}
+
+#resultPopupBox button{
+
+    width:100%;
+
+    margin-top:25px;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:
+    linear-gradient(
+        135deg,
+        #f59e0b,
+        #ea580c
+    );
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:0.3s;
+}
+
+#resultPopupBox button:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+    0 10px 25px rgba(245,158,11,0.3);
+}
+
+@keyframes popupEntry{
+
+    from{
+
+        transform:
+        scale(0.9)
+        translateY(30px);
+
+        opacity:0;
+    }
+
+    to{
+
+        transform:
+        scale(1)
+        translateY(0);
+
+        opacity:1;
+    }
+}
+
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+    }
+
+    to{
+        opacity:1;
+    }
+}

@@ -11,62 +11,6 @@ function toggleTheme() {
         }
     }
 
-function startWelcomeTyping(){
-
-    const message =
-
-`Dear ladies and gentlemen,
-
-Welcome to Noida's Pinnacle Scholars Academy.
-
-Where excellence meets innovation,
-dreams become achievements,
-and future leaders are created.
-
-Empowering students with knowledge,
-discipline, and confidence
-for a brighter tomorrow.
-
-Nurturing creativity, leadership,
-and academic excellence
-in every learner.
-
-Building a strong foundation
-for success in education and life.
-
-We are delighted to welcome you.`;
-
-    const target =
-        document.getElementById(
-            "typingMessage"
-        );
-
-    if(!target) return;
-
-    let index = 0;
-
-    target.innerHTML = "";
-
-    function typeCharacter(){
-
-        if(index < message.length){
-
-            target.innerHTML +=
-                message.charAt(index);
-
-            index++;
-
-            setTimeout(
-                typeCharacter,
-                85
-            );
-        } else {
-            startIntroAnimations();
-        }
-    }
-
-    typeCharacter();
-}
 
 function startIntroAnimations(){
 
@@ -1904,7 +1848,11 @@ const timer = setInterval(()=>{count += increment;
 
 // Welcome Intro Animation Sequence
 window.addEventListener("load", () => {
-    startWelcomeTyping();   
+
+    setTimeout(() => {
+        startIntroAnimations();
+    }, 4500);
+
 });
 
 
