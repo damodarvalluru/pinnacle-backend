@@ -1,3 +1,4 @@
+<style>
         :root{
             --primary:#071427;
             --secondary:#2563eb;
@@ -576,7 +577,7 @@
         }
         
         .hero h1{
-    font-size:10rem;
+    font-size:4.5rem;
     font-weight:900;
 
     background:
@@ -1548,301 +1549,52 @@ PREMIUM WELCOME INTRO SCREEN
     text-align:center;
     padding:40px;
     animation:introFade 2s ease;
-    overflow:hidden;
 }
 
 .intro-title{
-
     font-family:'Cinzel',serif;
-
     font-size:3.8rem;
-
     font-weight:800;
-
     color:#ffffff;
-
-    letter-spacing:4px;
-
-    margin-bottom:18px;
-
-    position:relative;
+    letter-spacing:3px;
+    margin-bottom:12px;
 
     text-shadow:
-        0 0 15px rgba(255,255,255,.35),
-        0 0 35px rgba(37,99,235,.25),
-        0 0 70px rgba(59,130,246,.20);
+        0 0 20px rgba(255,255,255,.35),
+        0 0 40px rgba(37,99,235,.25);
 
-    animation:
-        titleGlow 4s ease-in-out infinite alternate;
-}
-
-.shooting-star{
-
-    position:absolute;
-
-    top:15%;
-
-    left:-200px;
-
-    width:180px;
-
-    height:2px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            white,
-            transparent
-        );
-
-    opacity:.8;
-
-    transform:rotate(-18deg);
-
-    animation:
-        shootingStar
-        5s linear infinite;
-
-    z-index:15;
-}
-
-@keyframes shootingStar{
-
-    0%{
-
-        left:-200px;
-        top:15%;
-        opacity:0;
-    }
-
-    10%{
-
-        opacity:1;
-    }
-
-    100%{
-
-        left:120%;
-        top:55%;
-        opacity:0;
-    }
+    animation:titleGlow 3s ease-in-out infinite alternate;
 }
 
 .intro-message{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:14px;
-
-    align-items:center;
-
-    position:relative;
-
-    overflow:hidden;
+    font-family:'Poppins',sans-serif;
+    color:#e2e8f0;
+    font-size:1.2rem;
+    line-height:2.1;
+    font-weight:400;
+    max-width:900px;
+    margin:auto;
 }
 
-.intro-message span{
-
+.intro-message p{
+    margin-bottom:20px;
     opacity:0;
-
-    transform:
-        translateY(30px)
-        scale(.95);
-
-    color:#f8fafc;
-
-    letter-spacing:.5px;
-
-    animation:
-        constellationReveal
-        1.2s forwards;
-
-    text-shadow:
-        0 0 8px rgba(255,255,255,.15);
+    animation:textReveal 1s forwards;
 }
 
-.intro-message::before,
-.intro-message::after{
+.intro-message p:nth-child(1){animation-delay:.4s;}
+.intro-message p:nth-child(2){animation-delay:1s;}
+.intro-message p:nth-child(3){animation-delay:1.8s;}
+.intro-message p:nth-child(4){animation-delay:2.6s;}
+.intro-message p:nth-child(5){animation-delay:3.4s;}
+.intro-message p:nth-child(6){animation-delay:4.2s;}
+.intro-message p:nth-child(7){animation-delay:5s;}
 
-    content:"";
-
-    position:absolute;
-
-    inset:-30px;
-
-    pointer-events:none;
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(255,255,255,.9) 1px,
-            transparent 2px
-        );
-
-    background-size:
-        120px 120px;
-
-    opacity:.18;
-
-    animation:
-        constellationStars
-        12s linear infinite;
-}
-
-.intro-message::after{
-
-    animation-duration:18s;
-
-    opacity:.10;
-
-    transform:scale(1.15);
-}
-
-.intro-message span:nth-child(1){
-    animation-delay:.3s;
-}
-
-.intro-message span:nth-child(2){
-    animation-delay:.8s;
-}
-
-.intro-message span:nth-child(3){
-    animation-delay:1.3s;
-}
-
-.intro-message span:nth-child(4){
-    animation-delay:1.8s;
-}
-
-.intro-message span:nth-child(5){
-    animation-delay:2.3s;
-}
-
-.intro-message span:nth-child(6){
-    animation-delay:2.8s;
-}
-
-.intro-message span:nth-child(7){
-    animation-delay:3.3s;
-}
-
-.intro-message span:nth-child(8){
-    animation-delay:3.8s;
-}
-
-@keyframes constellationReveal{
-
-    0%{
-
-        opacity:0;
-
-        transform:
-            translateY(30px)
-            scale(.9);
-
-        filter:
-            blur(10px);
-    }
-
-    40%{
-
-        opacity:.4;
-
-        text-shadow:
-            0 0 20px white;
-    }
-
-    100%{
-
-        opacity:1;
-
-        transform:
-            translateY(0)
-            scale(1);
-
-        filter:
-            blur(0);
-
-        text-shadow:
-            0 0 10px rgba(255,255,255,.4),
-            0 0 25px rgba(37,99,235,.25);
-    }
-}
-
-.constellation-overlay{
-
-    position:absolute;
-
-    inset:0;
-
-    pointer-events:none;
-
-    opacity:.22;
-
-    background-image:
-
-    radial-gradient(
-        circle at 20% 30%,
-        white 1px,
-        transparent 2px
-    ),
-
-    radial-gradient(
-        circle at 60% 25%,
-        white 1px,
-        transparent 2px
-    ),
-
-    radial-gradient(
-        circle at 80% 70%,
-        white 1px,
-        transparent 2px
-    ),
-
-    radial-gradient(
-        circle at 35% 80%,
-        white 1px,
-        transparent 2px
-    );
-
-    animation:
-        starDrift
-        20s linear infinite;
-}
-
-@keyframes starDrift{
-
-    from{
-
-        transform:
-            translateY(0);
-    }
-
-    to{
-
-        transform:
-            translateY(-40px);
-    }
-}
-
-@keyframes constellationStars{
-
-    from{
-
-        transform:
-            translateY(0)
-            rotate(0deg);
-    }
-
-    to{
-
-        transform:
-            translateY(-25px)
-            rotate(360deg);
-    }
+.welcome-last{
+    font-size:1.35rem;
+    font-weight:700;
+    color:#facc15;
+    letter-spacing:1px;
 }
 
 /* GLOW EFFECT */
@@ -1882,6 +1634,10 @@ PREMIUM WELCOME INTRO SCREEN
     opacity:0;
 
     z-index:25;
+}
+
+#welcomeIntro.open .intro-flash{
+    animation:introFlash 1.8s ease;
 }
 
 @keyframes introFlash{
@@ -2124,6 +1880,17 @@ BARS GO BACK UP
     }
 }
 
+@keyframes textReveal{
+    from{
+        opacity:0;
+        transform:translateY(25px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
 
 /* MOBILE RESPONSIVE */
 
@@ -2177,138 +1944,4 @@ img, iframe, video{
 [data-theme="light"] .overview-highlight{
     color:#1d4ed8;
 }
-    
-/* ==========================================
-PDF / PRINT OPTIMIZATION
-========================================== */
-
-@media print {
-
-    body * {
-        visibility: hidden;
-    }
-
-    #printableProspectusArea,
-    #printableProspectusArea * {
-        visibility: visible;
-    }
-
-    #printableProspectusArea {
-
-        position: absolute !important;
-
-        left: 0;
-        top: 0;
-
-        width: 100% !important;
-
-        max-width: 100% !important;
-
-        height: auto !important;
-
-        overflow: visible !important;
-
-        padding: 15mm !important;
-
-        box-shadow: none !important;
-
-        border-radius: 0 !important;
-    }
-
-    .no-print {
-        display: none !important;
-    }
-
-    .pdf-watermark-text {
-        opacity: 0.08 !important;
-    }
-
-    .website-qr {
-        page-break-inside: avoid;
-    }
-
-    footer {
-        page-break-inside: avoid;
-    }
-}
-
-@page {
-
-    size: A4 portrait;
-
-    margin: 10mm;
-}
-
-@media print {
-
-    .pdf-page-break {
-
-        page-break-before: always;
-    }
-}
-
-@media(max-width:768px){
-
-    #printableProspectusArea{
-
-        padding:15px !important;
-    }
-
-    #printableProspectusArea h1{
-
-        font-size:18px !important;
-    }
-
-    #printableProspectusArea h2{
-
-        font-size:12px !important;
-    }
-
-    #printableProspectusArea p,
-    #printableProspectusArea li{
-
-        font-size:13px !important;
-    }
-
-    .website-qr{
-
-        width:120px !important;
-    }
-
-    .website-qr img{
-
-        width:100px !important;
-        height:100px !important;
-    }
-}
-
-#typingMessage{
-
-    color:white;
-
-    font-size:1.1rem;
-
-    line-height:1.8;
-
-    min-height:250px;
-
-    white-space:pre-line;
-}
-
-/* Blinking Cursor */
-
-#typingMessage::after{
-
-    content:"|";
-
-    animation:blink 0.8s infinite;
-
-    color:#38bdf8;
-}
-
-@keyframes blink{
-
-    50%{
-        opacity:0;
-    }
-}
+    </style>
