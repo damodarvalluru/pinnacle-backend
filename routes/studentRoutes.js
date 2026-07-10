@@ -7,139 +7,245 @@ const pool = require('../db');
 /*
 REGISTER STUDENT
 */
-
 router.post('/register', async (req, res) => {
-
+let connection;
     try {
-
-        const {
+        
+            let {
             name,
             dob,
             domain
         } = req.body;
-console.log("REQUEST BODY:", req.body);
+
+
+name = name?.trim();
+domain = domain?.trim();
         /*
         VALIDATION
         */
 
         if (!name || !dob || !domain) {
 
-            return res.status(400).json({
-                success: false,
-                message: "All fields required"
-            });
-        }
+    return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+    });
+}
 
-        /*
-        CURRENT YEAR
-        */
 
-        const currentYear =
-            new Date().getFullYear();
+// Name validation
+if (name.length < 3) {
 
-        let prefix = "";
-        let totalFees = 0;
-        let formattedNumber = "";
-        let nextNumber = 0;
+    return res.status(400).json({
+        success: false,
+        message: "Name must contain at least 3 characters"
+    });
+}
 
-        /*
-        MPC
-        */
+// Date validation
+const dobDate = new Date(dob);
 
-        if (domain === "MPC-JEE") {
+if (isNaN(dobDate.getTime())) {
 
-            prefix = `PS-I-${currentYear}`;
+    return res.status(400).json({
+        success: false,
+        message: "Invalid date of birth format"
+    });
+}
 
-            totalFees = 55000;
+connection = await pool.getConnection();
 
-            const [rows] = await pool.query(
+        await connection.beginTransaction();
+       /*
+================================================
+STUDENT ID GENERATION (NO EXTRA TABLE)
+================================================
+*/
 
-                `SELECT COUNT(*) AS total
-                 FROM students
-                 WHERE domain = ?`,
+const currentYear =
+    new Date().getFullYear();
 
-                [domain]
-            );
 
-            nextNumber = rows[0].total + 1;
+let prefix = "";
 
-            /*
-            PS-I-2026-001
-            */
+let totalFees = 0;
 
-            formattedNumber =
-                String(nextNumber).padStart(3, '0');
-        }
+let formattedNumber = "";
 
-        /*
-        BIPC
-        */
+let nextNumber = 1;
 
-        else if (domain === "BIPC-NEET") {
 
-            prefix = `PS-I-${currentYear}`;
 
-            totalFees = 65000;
+/*
+MPC-JEE
+*/
 
-            const [rows] = await pool.query(
+if(domain === "MPC-JEE"){
 
-                `SELECT COUNT(*) AS total
-                 FROM students
-                 WHERE domain = ?`,
+    prefix = `PS-I-${currentYear}`;
 
-                [domain]
-            );
+    totalFees = 55000;
 
-            nextNumber = rows[0].total + 1;
 
-            /*
-            PS-I-2026-0001
-            */
+    const [rows] = await connection.query(
 
-            formattedNumber =
-                String(nextNumber).padStart(4, '0');
-        }
+        `SELECT student_id
+         FROM students
+         WHERE domain = ?
+         ORDER BY id DESC
+         LIMIT 1
+         FOR UPDATE`,
 
-        /*
-        MTECH
-        */
+        [domain]
 
-        else if (
-            domain.startsWith("MTECH")
-        ) {
+    );
 
-            prefix = `PS-M-${currentYear}`;
 
-            totalFees = 80000;
+    if(rows.length > 0){
 
-            const [rows] = await pool.query(
+        const lastId =
+        rows[0].student_id;
 
-                `SELECT COUNT(*) AS total
-                 FROM students
-                 WHERE domain LIKE 'MTECH%'`
-            );
 
-            nextNumber = rows[0].total + 1;
+        const lastNumber =
+        parseInt(
+            lastId.split("-").pop()
+        );
 
-            /*
-            PS-M-2026-001
-            */
 
-            formattedNumber =
-                String(nextNumber).padStart(3, '0');
-        }
+        nextNumber =
+        lastNumber + 1;
 
-        /*
-        INVALID DOMAIN
-        */
+    }
 
-        else {
 
-            return res.status(400).json({
-                success: false,
-                message: "Invalid domain"
-            });
-        }
+    formattedNumber =
+    String(nextNumber)
+    .padStart(3,'0');
+
+
+}
+
+
+
+/*
+BIPC-NEET
+*/
+
+else if(domain === "BIPC-NEET"){
+
+    prefix = `PS-I-${currentYear}`;
+
+    totalFees = 65000;
+
+
+
+    const [rows] = await connection.query(
+
+        `SELECT student_id
+         FROM students
+         WHERE domain = ?
+         ORDER BY id DESC
+         LIMIT 1
+         FOR UPDATE`,
+
+        [domain]
+
+    );
+
+
+
+    if(rows.length > 0){
+
+
+        const lastNumber =
+        parseInt(
+            rows[0].student_id
+            .split("-")
+            .pop()
+        );
+
+
+        nextNumber =
+        lastNumber + 1;
+
+    }
+
+
+    formattedNumber =
+    String(nextNumber)
+    .padStart(4,'0');
+
+
+}
+
+
+
+/*
+MTECH
+*/
+
+else if(domain.startsWith("MTECH")){
+
+
+    prefix = `PS-M-${currentYear}`;
+
+    totalFees = 80000;
+
+
+
+    const [rows] = await connection.query(
+
+        `SELECT student_id
+         FROM students
+         WHERE domain LIKE 'MTECH%'
+         ORDER BY id DESC
+         LIMIT 1
+         FOR UPDATE`
+
+    );
+
+
+
+    if(rows.length > 0){
+
+
+        const lastNumber =
+        parseInt(
+            rows[0].student_id
+            .split("-")
+            .pop()
+        );
+
+
+        nextNumber =
+        lastNumber + 1;
+
+
+    }
+
+
+
+    formattedNumber =
+    String(nextNumber)
+    .padStart(3,'0');
+
+
+}
+
+
+
+else{
+
+    return res.status(400).json({
+
+        success:false,
+
+        message:"Invalid domain"
+
+    });
+
+}
 
         /*
         FINAL STUDENT ID
@@ -160,8 +266,8 @@ console.log("REQUEST BODY:", req.body);
             /*
         INSERT INTO DATABASE
         */
-
-        await pool.query(
+        try{
+        await connection.query(
 
             `INSERT INTO students
             (
@@ -186,12 +292,38 @@ console.log("REQUEST BODY:", req.body);
                 remaining_fees
             ]
         );
+}
+catch(insertError){
 
+
+if(insertError.code === "ER_DUP_ENTRY"){
+
+
+    return res.status(409).json({
+
+        success:false,
+
+        message:
+        "Student ID generation conflict. Please try again."
+
+    });
+
+
+}
+
+
+throw insertError;
+
+}
+        await connection.commit();
+
+connection.release();
+connection = null;
         /*
         SUCCESS
         */
 
-        res.json({
+        res.status(201).json({
 
             success: true,
 
@@ -211,15 +343,36 @@ console.log("REQUEST BODY:", req.body);
         });
 }
     catch (error) {
-console.log(error);
+       if(connection){
+
+        try{
+
+            await connection.rollback();
+
+        }
+        catch(rollbackError){
+
+            console.error(
+                "Rollback Error:",
+                rollbackError.message
+            );
+
+        }
+
+
+        connection.release();
+
+    }
+console.error(
+    "Student Registration Error:",
+    error.message
+);
         res.status(500).json({
 
             success: false,
 
             message:
-                "Backend server error",
-
-            error: error.message
+                "Backend server error"
         });
     }
 });
@@ -261,13 +414,16 @@ router.get('/:studentId', async (req, res) => {
 
     catch (error) {
 
-        console.log(error);
+        console.error(
+    "Student Fetch Error:",
+    error.message
+);
 
         res.status(500).json({
 
             success: false,
 
-            error: error.message
+            message: "Backend server error"
         });
     }
 });

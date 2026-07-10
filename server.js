@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const path = require('path');
 const cors = require('cors');
 const studentRoutes = require('./routes/studentRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
@@ -28,16 +27,13 @@ const app = express();
 // 2. Enable CORS globally before setting up route structures
 app.use(cors({
     origin: ['http://127.0.0.1:5500', 'http://localhost:5500','https://damodarvalluru.github.io'],
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
     credentials: true
 }));
 
 // 3. Payload parsing middleware structures
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// 4. Serve static assets 
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/backend-status', (req, res) => {
     res.json({
@@ -90,20 +86,6 @@ app.use('/api/faculty', facultyRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api/visitors', visitorRoutes);
-// CRITICAL FIX: Wildcard router placed at the absolute bottom of the stack
-// Wildcard route ONLY for frontend pages
-app.get('*', (req, res, next) => {
-
-    // Prevent wildcard from handling API routes
-    if (req.originalUrl.startsWith('/api')) {
-        return res.status(404).json({
-            success: false,
-            message: 'API Route Not Found'
-        });
-    }
-
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 // Error handling fallback
 app.use((err, req, res, next) => {
     console.error(err.stack);
