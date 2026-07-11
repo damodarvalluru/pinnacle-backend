@@ -20,8 +20,12 @@ const pool = mysql.createPool({
 
     queueLimit: 0,
 
-    connectTimeout: 10000
+    connectTimeout: 10000,
 
+    ssl: {
+        ca: process.env.DB_SSL_CA,
+        rejectUnauthorized: true
+    }
 
 });
 
