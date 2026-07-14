@@ -12,7 +12,7 @@ const pool = mysql.createPool({
 
     database: process.env.DB_NAME,
 
-    port: process.env.DB_PORT,
+    port: Number(process.env.DB_PORT) || 4000,
 
     waitForConnections: true,
 
@@ -20,11 +20,12 @@ const pool = mysql.createPool({
 
     queueLimit: 0,
 
-    connectTimeout: 10000,
+    connectTimeout: 20000,
 
     ssl: {
-        ca: process.env.DB_SSL_CA,
+        minVersion: 'TLSv1.2',
         rejectUnauthorized: true
+        // no `ca` needed — Node's default trust store already trusts TiDB's cert
     }
 
 });
