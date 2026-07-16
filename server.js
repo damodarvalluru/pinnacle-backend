@@ -6,6 +6,7 @@ const facultyRoutes = require('./routes/facultyRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const testRoutes = require('./routes/testRoutes');
 const visitorRoutes = require('./routes/visitorRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 const cron = require('node-cron');
 const twilio = require('twilio');
 const db = require('./db');
@@ -86,6 +87,7 @@ app.use('/api/faculty', facultyRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api/visitors', visitorRoutes);
+app.use('/api/contact', contactRoutes);
 // Error handling fallback
 app.use((err, req, res, next) => {
     console.error(err.stack);
