@@ -111,8 +111,10 @@ router.post("/submit", async (req, res) => {
 
         // ---- 2. Email to Gmail (non-blocking failure) ----
         let emailSent = false;
-        try {
-            if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+        if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+            console.warn("⚠️  Contact form: GMAIL_USER / GMAIL_APP_PASSWORD not set — skipping email notification.");
+        } else {
+            try {
                 await mailTransporter.sendMail({
                     from: `"Pinnacle Scholars Website" <${process.env.GMAIL_USER}>`,
                     to: process.env.CONTACT_NOTIFY_EMAIL || process.env.GMAIL_USER,
@@ -129,15 +131,25 @@ router.post("/submit", async (req, res) => {
                     `
                 });
                 emailSent = true;
+                console.log("✅ Contact form: email sent to", process.env.CONTACT_NOTIFY_EMAIL || process.env.GMAIL_USER);
+            } catch (mailErr) {
+                // Log the FULL error (not just .message) — Nodemailer/Gmail auth
+                // failures (wrong app password, 2FA not enabled, etc.) usually
+                // carry a `.code` / `.response` with the real reason.
+                console.error("❌ Contact form email failed:", {
+                    message: mailErr.message,
+                    code: mailErr.code,
+                    response: mailErr.response
+                });
             }
-        } catch (mailErr) {
-            console.error("Contact form email failed:", mailErr.message);
         }
 
         // ---- 3. WhatsApp via Twilio (non-blocking failure) ----
         let whatsappSent = false;
-        try {
-            if (process.env.TWILIO_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_WHATSAPP_FROM && process.env.CONTACT_NOTIFY_WHATSAPP) {
+        if (!process.env.TWILIO_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_WHATSAPP_FROM || !process.env.CONTACT_NOTIFY_WHATSAPP) {
+            console.warn("⚠️  Contact form: TWILIO_WHATSAPP_FROM / CONTACT_NOTIFY_WHATSAPP not set — skipping WhatsApp notification.");
+        } else {
+            try {
                 await twilioClient.messages.create({
                     from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`,
                     to: `whatsapp:${process.env.CONTACT_NOTIFY_WHATSAPP}`,
@@ -151,9 +163,16 @@ router.post("/submit", async (req, res) => {
                         `Message: ${message}`
                 });
                 whatsappSent = true;
+                console.log("✅ Contact form: WhatsApp sent to", process.env.CONTACT_NOTIFY_WHATSAPP);
+            } catch (waErr) {
+                // Twilio errors carry a `.code` (e.g. 63016 = recipient hasn't
+                // joined the sandbox) and `.moreInfo` link — log both.
+                console.error("❌ Contact form WhatsApp send failed:", {
+                    message: waErr.message,
+                    code: waErr.code,
+                    moreInfo: waErr.moreInfo
+                });
             }
-        } catch (waErr) {
-            console.error("Contact form WhatsApp send failed:", waErr.message);
         }
 
         return res.json({
