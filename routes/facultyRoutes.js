@@ -431,4 +431,122 @@ router.post('/login', async (req,res)=>{
 
 
 
+
+/*
+====================================================
+FORGOT FACULTY ID
+Recovery mechanism: the faculty member provides their
+registered Mobile Number, and every faculty record
+matching that mobile number is returned (Faculty ID, DOB,
+Mobile, Email) so it can be shown to them in an alert on
+the frontend.
+====================================================
+*/
+
+router.post('/forgot-id', async (req, res) => {
+
+    try {
+
+        let { mobile } = req.body;
+
+        mobile = (mobile || '').trim();
+
+        if (!mobile) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                "Mobile number is required"
+
+            });
+
+        }
+
+        if (!/^[0-9]{10}$/.test(mobile)) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                "Invalid mobile number"
+
+            });
+
+        }
+
+        const [rows] = await pool.query(
+
+            `SELECT faculty_id, dob, mobile, mail
+             FROM faculty
+             WHERE mobile = ?`,
+
+            [mobile]
+
+        );
+
+        if (rows.length === 0) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                "No faculty record found for that mobile number"
+
+            });
+
+        }
+
+        const faculty = rows.map(r => ({
+
+            faculty_id: r.faculty_id,
+
+            dob: new Date(r.dob).toISOString().split("T")[0],
+
+            mobile: r.mobile,
+
+            mail: r.mail
+
+        }));
+
+        res.json({
+
+            success: true,
+
+            faculty,
+
+            note: "Please remember your ID."
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+
+            "Forgot Faculty ID Error:",
+
+            error.message
+
+        );
+
+        res.status(500).json({
+
+            success: false,
+
+            message:
+            "Internal Server Error"
+
+        });
+
+    }
+
+});
+
+
+
 module.exports = router;
