@@ -128,11 +128,69 @@ if (GMAIL_USER && GMAIL_APP_PASSWORD) {
 // ----------------------------------------------------------
 // Twilio client for WhatsApp — reuses the same credentials the
 // project already uses for SMS cron alerts in server.js
+//
+// FIX: an explicit request `timeout` is now set so a stalled
+// Twilio API call fails fast instead of hanging (mirrors the
+// Nodemailer timeouts above). A startup check also fetches the
+// account status once so a suspended/expired Twilio account (a
+// very common reason WhatsApp can go from "sometimes fails" to
+// "always fails" with ZERO code changes) shows up immediately
+// in the logs instead of only failing silently per-submission.
 // ----------------------------------------------------------
-const twilioClient = twilio(
-    process.env.TWILIO_SID,
-    process.env.TWILIO_AUTH_TOKEN
-);
+const TWILIO_SID = (process.env.TWILIO_SID || "").trim();
+const TWILIO_AUTH_TOKEN = (process.env.TWILIO_AUTH_TOKEN || "").trim();
+const TWILIO_WHATSAPP_FROM = (process.env.TWILIO_WHATSAPP_FROM || "").trim();
+const CONTACT_NOTIFY_WHATSAPP = (process.env.CONTACT_NOTIFY_WHATSAPP || "").trim();
+
+const twilioClient = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN, { timeout: 8000 });
+
+if (TWILIO_SID && TWILIO_AUTH_TOKEN) {
+    twilioClient.api.v2010.accounts(TWILIO_SID).fetch()
+        .then((account) => {
+            if (account.status !== "active") {
+                console.error(`❌ Twilio account status is "${account.status}" (not "active") — WhatsApp sends will fail. Check https://console.twilio.com/`);
+            } else {
+                console.log("✅ Twilio account verified and active — ready to send WhatsApp notifications.");
+                console.log(
+                    "   ➜ Reminder: if TWILIO_WHATSAPP_FROM is the Twilio Sandbox number (+14155238886), " +
+                    "the recipient's WhatsApp must re-send \"join <your-sandbox-code>\" to it every 72 hours " +
+                    "of inactivity, or every send will silently fail with error 63016/63018."
+                );
+            }
+        })
+        .catch((err) => {
+            console.error("❌ Twilio account verification FAILED — WhatsApp will not send:", {
+                message: err.message,
+                code: err.code,
+                moreInfo: err.moreInfo
+            });
+            console.error("   ➜ Check TWILIO_SID and TWILIO_AUTH_TOKEN are current and the account isn't suspended (trial funds exhausted, etc.) at https://console.twilio.com/");
+        });
+} else {
+    console.warn("⚠️  TWILIO_SID / TWILIO_AUTH_TOKEN not set in environment — WhatsApp notifications are disabled.");
+}
+
+// One retry for genuinely transient network failures only — Twilio
+// error codes for bad numbers, unjoined sandbox, etc. won't succeed
+// on retry, so those are NOT retried (no point burning the extra
+// round-trip / delaying the response).
+const TWILIO_RETRYABLE_CODES = new Set([20429, 429]); // rate limited
+async function sendContactWhatsApp(body) {
+    const payload = {
+        from: `whatsapp:${TWILIO_WHATSAPP_FROM}`,
+        to: `whatsapp:${CONTACT_NOTIFY_WHATSAPP}`,
+        body
+    };
+    try {
+        await twilioClient.messages.create(payload);
+    } catch (err) {
+        if (TWILIO_RETRYABLE_CODES.has(err.code)) {
+            await twilioClient.messages.create(payload); // single immediate retry
+            return;
+        }
+        throw err;
+    }
+}
 
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -210,9 +268,13 @@ router.post("/submit", async (req, res) => {
         // with Promise.allSettled() means neither one waits on the
         // other, and the 10s timeouts on the mail transporter (above)
         // put a hard ceiling on the worst case.
+        let emailError = null;
+        let whatsappError = null;
+
         const emailPromise = (async () => {
             if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-                console.warn("⚠️  Contact form: GMAIL_USER / GMAIL_APP_PASSWORD not set — skipping email notification.");
+                emailError = "Email notifications are not configured on the server (missing GMAIL_USER / GMAIL_APP_PASSWORD).";
+                console.warn("⚠️  Contact form:", emailError);
                 return false;
             }
             try {
@@ -242,38 +304,39 @@ router.post("/submit", async (req, res) => {
                     code: mailErr.code,
                     response: mailErr.response
                 });
+                emailError = `${mailErr.code || "EMAIL_ERROR"}: ${mailErr.message}`;
                 return false;
             }
         })();
 
         const whatsappPromise = (async () => {
-            if (!process.env.TWILIO_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_WHATSAPP_FROM || !process.env.CONTACT_NOTIFY_WHATSAPP) {
-                console.warn("⚠️  Contact form: TWILIO_WHATSAPP_FROM / CONTACT_NOTIFY_WHATSAPP not set — skipping WhatsApp notification.");
+            if (!TWILIO_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_FROM || !CONTACT_NOTIFY_WHATSAPP) {
+                whatsappError = "WhatsApp notifications are not configured on the server (missing Twilio env vars).";
+                console.warn("⚠️  Contact form:", whatsappError);
                 return false;
             }
             try {
-                await twilioClient.messages.create({
-                    from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`,
-                    to: `whatsapp:${process.env.CONTACT_NOTIFY_WHATSAPP}`,
-                    body:
-                        `📩 *New Website Enquiry*\n` +
-                        `Name: ${name}\n` +
-                        `Mobile: ${mobile}\n` +
-                        `Email: ${email}\n` +
-                        `Location: ${location}\n` +
-                        `DOB: ${dob}\n` +
-                        `Message: ${message}`
-                });
-                console.log("✅ Contact form: WhatsApp sent to", process.env.CONTACT_NOTIFY_WHATSAPP);
+                await sendContactWhatsApp(
+                    `📩 *New Website Enquiry*\n` +
+                    `Name: ${name}\n` +
+                    `Mobile: ${mobile}\n` +
+                    `Email: ${email}\n` +
+                    `Location: ${location}\n` +
+                    `DOB: ${dob}\n` +
+                    `Message: ${message}`
+                );
+                console.log("✅ Contact form: WhatsApp sent to", CONTACT_NOTIFY_WHATSAPP);
                 return true;
             } catch (waErr) {
-                // Twilio errors carry a `.code` (e.g. 63016 = recipient hasn't
-                // joined the sandbox) and `.moreInfo` link — log both.
+                // Twilio errors carry a `.code` (e.g. 63016/63018 = recipient
+                // hasn't joined the sandbox in the last 72h, 21211 = invalid
+                // "to" number) and `.moreInfo` link — log and surface both.
                 console.error("❌ Contact form WhatsApp send failed:", {
                     message: waErr.message,
                     code: waErr.code,
                     moreInfo: waErr.moreInfo
                 });
+                whatsappError = `Twilio ${waErr.code || "ERROR"}: ${waErr.message}`;
                 return false;
             }
         })();
@@ -286,7 +349,9 @@ router.post("/submit", async (req, res) => {
             success: true,
             message: "Your message has been received. We'll get back to you shortly.",
             emailSent,
-            whatsappSent
+            whatsappSent,
+            emailError: emailSent ? null : emailError,
+            whatsappError: whatsappSent ? null : whatsappError
         });
 
     } catch (error) {
@@ -296,6 +361,69 @@ router.post("/submit", async (req, res) => {
             message: "Something went wrong. Please try again later."
         });
     }
+});
+
+// ----------------------------------------------------------
+// SELF-DIAGNOSTICS
+// GET /api/contact/diagnostics
+// Visit this URL directly in a browser any time the contact form's
+// email or WhatsApp notifications stop working. It live-checks both
+// channels and reports the EXACT reason — no server log access or
+// asking for help needed. Nothing sensitive (passwords/tokens) is
+// ever included in the response.
+// ----------------------------------------------------------
+router.get("/diagnostics", async (req, res) => {
+    const report = {
+        checkedAt: new Date().toISOString(),
+        email: {
+            configured: Boolean(GMAIL_USER && GMAIL_APP_PASSWORD),
+            gmailUserSet: Boolean(GMAIL_USER),
+            gmailAppPasswordSet: Boolean(GMAIL_APP_PASSWORD),
+            gmailAppPasswordLength: GMAIL_APP_PASSWORD.length || 0, // should be 16
+            verified: false,
+            error: null
+        },
+        whatsapp: {
+            configured: Boolean(TWILIO_SID && TWILIO_AUTH_TOKEN && TWILIO_WHATSAPP_FROM && CONTACT_NOTIFY_WHATSAPP),
+            twilioSidSet: Boolean(TWILIO_SID),
+            twilioAuthTokenSet: Boolean(TWILIO_AUTH_TOKEN),
+            twilioWhatsappFromSet: Boolean(TWILIO_WHATSAPP_FROM),
+            contactNotifyWhatsappSet: Boolean(CONTACT_NOTIFY_WHATSAPP),
+            accountStatus: null,
+            error: null,
+            sandboxReminder:
+                "If TWILIO_WHATSAPP_FROM is the Twilio Sandbox number (+14155238886), the recipient's " +
+                "WhatsApp must send \"join <your-sandbox-code>\" to it again every 72 hours of inactivity, " +
+                "or ALL sends will fail with error 63016/63018 regardless of code."
+        }
+    };
+
+    if (report.email.configured) {
+        try {
+            await mailTransporterPrimary.verify();
+            report.email.verified = true;
+        } catch (err) {
+            report.email.error = `${err.code || "ERROR"}: ${err.message}`;
+        }
+    } else {
+        report.email.error = "GMAIL_USER / GMAIL_APP_PASSWORD missing in environment.";
+    }
+
+    if (report.whatsapp.configured) {
+        try {
+            const account = await twilioClient.api.v2010.accounts(TWILIO_SID).fetch();
+            report.whatsapp.accountStatus = account.status;
+            if (account.status !== "active") {
+                report.whatsapp.error = `Twilio account status is "${account.status}", not "active" — sends will fail until this is resolved in the Twilio console.`;
+            }
+        } catch (err) {
+            report.whatsapp.error = `${err.code || "ERROR"}: ${err.message}`;
+        }
+    } else {
+        report.whatsapp.error = "One or more of TWILIO_SID / TWILIO_AUTH_TOKEN / TWILIO_WHATSAPP_FROM / CONTACT_NOTIFY_WHATSAPP is missing in environment.";
+    }
+
+    res.json(report);
 });
 
 module.exports = router;
