@@ -376,6 +376,7 @@ console.error(
         });
     }
 });
+<<<<<<< HEAD
 /*
 ====================================================
 FORGOT STUDENT ID
@@ -463,6 +464,28 @@ router.post('/forgot-id', async (req, res) => {
             success: false,
             message: "Backend server error"
         });
+=======
+/* Recover a student ID using the recorded date of birth. This route must be
+   above /:studentId, otherwise Express treats "recover-id" as an ID. */
+router.post('/recover-id', async (req, res) => {
+    try {
+        const dob = String(req.body.dob || '');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+            return res.status(400).json({ success: false, message: 'A valid date of birth is required.' });
+        }
+
+        const [rows] = await pool.query(
+            `SELECT student_id, name, dob, domain FROM students WHERE dob = ? ORDER BY id ASC LIMIT 1`,
+            [dob]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'No student record was found for that date of birth.' });
+        }
+        return res.json({ success: true, student: rows[0] });
+    } catch (error) {
+        console.error('Student ID recovery error:', error.message);
+        return res.status(500).json({ success: false, message: 'Unable to recover the student ID right now.' });
+>>>>>>> 152f18b5c8fcc33c47dd934df61fe354a46f3b21
     }
 });
 

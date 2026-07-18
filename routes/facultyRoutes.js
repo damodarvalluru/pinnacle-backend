@@ -429,9 +429,31 @@ router.post('/login', async (req,res)=>{
 
 });
 
+/* Recover a faculty ID using the registered mobile number. */
+router.post('/recover-id', async (req, res) => {
+    try {
+        const mobile = String(req.body.mobile || '').trim();
+        if (!/^[0-9]{10}$/.test(mobile)) {
+            return res.status(400).json({ success: false, message: 'Enter the registered 10-digit mobile number.' });
+        }
+
+        const [rows] = await pool.query(
+            `SELECT faculty_id, dob, mobile, mail FROM faculty WHERE mobile = ? ORDER BY id ASC LIMIT 1`,
+            [mobile]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'No faculty record was found for that mobile number.' });
+        }
+        return res.json({ success: true, faculty: rows[0] });
+    } catch (error) {
+        console.error('Faculty ID recovery error:', error.message);
+        return res.status(500).json({ success: false, message: 'Unable to recover the faculty ID right now.' });
+    }
+});
 
 
 
+<<<<<<< HEAD
 /*
 ====================================================
 FORGOT FACULTY ID
@@ -550,3 +572,6 @@ router.post('/forgot-id', async (req, res) => {
 
 
 module.exports = router;
+=======
+module.exports = router;
+>>>>>>> 152f18b5c8fcc33c47dd934df61fe354a46f3b21
