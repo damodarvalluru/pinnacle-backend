@@ -376,6 +376,96 @@ console.error(
         });
     }
 });
+/*
+====================================================
+FORGOT STUDENT ID
+Recovery mechanism: the student provides their Date of
+Birth only, and every student record matching that DOB
+is returned (name, student ID, DOB, course/domain) so it
+can be shown to them in an alert on the frontend.
+NOTE: this route is registered BEFORE the "/:studentId"
+GET route below on purpose — it's a different HTTP method
+(POST) so there's no real routing collision, but keeping
+it here keeps every student-lookup route grouped together.
+====================================================
+*/
+router.post('/forgot-id', async (req, res) => {
+
+    try {
+
+        let { dob } = req.body;
+        dob = (dob || '').trim();
+
+        if (!dob) {
+            return res.status(400).json({
+                success: false,
+                message: "Date of Birth is required"
+            });
+        }
+
+        const dobDate = new Date(dob);
+
+        if (isNaN(dobDate.getTime())) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid date of birth format"
+            });
+        }
+
+        // A date of birth can never be in the future
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+
+        if (dobDate.getTime() > todayEnd.getTime()) {
+            return res.status(400).json({
+                success: false,
+                message: "Date of Birth cannot be a future date"
+            });
+        }
+
+        const [rows] = await pool.query(
+
+            `SELECT student_id, name, dob, domain
+             FROM students
+             WHERE dob = ?`,
+
+            [dob]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No student record found for that Date of Birth"
+            });
+        }
+
+        const students = rows.map(r => ({
+            student_id: r.student_id,
+            name: r.name,
+            dob: new Date(r.dob).toISOString().split("T")[0],
+            domain: r.domain
+        }));
+
+        res.json({
+            success: true,
+            students,
+            note: "Please remember your ID."
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Forgot Student ID Error:",
+            error.message
+        );
+
+        res.status(500).json({
+            success: false,
+            message: "Backend server error"
+        });
+    }
+});
+
 /*GET STUDENT*/
 router.get('/:studentId', async (req, res) => {
 
