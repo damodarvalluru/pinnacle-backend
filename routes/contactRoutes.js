@@ -46,36 +46,66 @@ async function ensureTable() {
 // Nodemailer transporter — Gmail via App Password
 // (GMAIL_USER / GMAIL_APP_PASSWORD come from .env, see README)
 //
-// FIX: previously this had no timeouts configured, so on hosts
-// like Render where outbound SMTP (port 465/587) can be slow or
-// silently blocked, a stuck connection would hang for the OS-level
-// TCP timeout (often 2-3+ minutes) before failing. Since the old
-// code awaited the email step BEFORE the WhatsApp step, that hang
-// delayed the WhatsApp send too — which is exactly the "WhatsApp
-// takes 2-3 minutes" symptom. Explicit short timeouts below cap
-// the worst case at ~10s, and the email/WhatsApp sends are now
-// fired in parallel (see router.post below) so neither one blocks
-// the other at all.
+// FIX #1: credentials are now trimmed/sanitized. Google displays App
+// Passwords in 4-character groups with spaces ("abcd efgh ijkl mnop")
+// and it's extremely common to paste that straight into an env var —
+// Gmail then rejects the login outright, which looks exactly like
+// "email is not working at all" with no useful client-side symptom.
+//
+// FIX #2: two transporters are configured — port 465 (implicit TLS)
+// as the primary, and port 587 (STARTTLS) as a fallback. Some
+// network paths only allow one of the two outbound SMTP ports; if
+// 465 is blocked/unreliable from the host, every send would fail
+// silently until now. sendContactEmail() below tries 465 first and
+// automatically retries on 587 if that attempt fails for a
+// connection-level reason (not a credentials/auth rejection).
+//
+// FIX #3 (from before): explicit short timeouts so a stuck
+// connection fails fast instead of hanging for minutes.
 // ----------------------------------------------------------
-const mailTransporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-    },
-    connectionTimeout: 10000, // fail fast instead of hanging for minutes
-    greetingTimeout: 10000,
-    socketTimeout: 10000
-});
+const GMAIL_USER = (process.env.GMAIL_USER || "").trim();
+const GMAIL_APP_PASSWORD = (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "");
 
-// Verify the transporter once at startup so misconfigured Gmail
-// credentials (wrong app password, 2FA not enabled, etc.) show up
-// clearly in the server logs immediately, instead of silently
+function buildTransporter(port, secure) {
+    return nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port,
+        secure, // true for 465, false for 587 (STARTTLS)
+        auth: {
+            user: GMAIL_USER,
+            pass: GMAIL_APP_PASSWORD
+        },
+        connectionTimeout: 10000, // fail fast instead of hanging for minutes
+        greetingTimeout: 10000,
+        socketTimeout: 10000
+    });
+}
+
+const mailTransporterPrimary = buildTransporter(465, true);
+const mailTransporterFallback = buildTransporter(587, false);
+
+async function sendContactEmail(mailOptions) {
+    try {
+        await mailTransporterPrimary.sendMail(mailOptions);
+        return { sent: true, via: "465" };
+    } catch (primaryErr) {
+        // Only retry on connection-level failures — an auth rejection
+        // (wrong password) will fail on 587 too, so don't waste time.
+        const connectionLevel = ["ETIMEDOUT", "ECONNECTION", "ESOCKET", "ECONNREFUSED"].includes(primaryErr.code);
+        if (!connectionLevel) throw primaryErr;
+
+        console.warn("⚠️  Port 465 email send failed, retrying on port 587 (STARTTLS)...", primaryErr.code);
+        await mailTransporterFallback.sendMail(mailOptions);
+        return { sent: true, via: "587" };
+    }
+}
+
+// Verify the primary transporter once at startup so misconfigured
+// Gmail credentials (wrong app password, 2FA not enabled, etc.) show
+// up clearly in the server logs immediately, instead of silently
 // failing only when a real visitor submits the form.
-if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-    mailTransporter.verify((verifyErr) => {
+if (GMAIL_USER && GMAIL_APP_PASSWORD) {
+    mailTransporterPrimary.verify((verifyErr) => {
         if (verifyErr) {
             console.error("❌ Nodemailer transporter verification FAILED — emails will not send:", {
                 message: verifyErr.message,
@@ -83,8 +113,9 @@ if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
                 response: verifyErr.response
             });
             console.error(
-                "   ➜ Check: GMAIL_USER is a full Gmail address, GMAIL_APP_PASSWORD is a 16-character " +
-                "Google App Password (NOT your normal Gmail password), and 2-Step Verification is ON for that account."
+                "   ➜ Check: GMAIL_USER is a full Gmail address, GMAIL_APP_PASSWORD is the 16-character " +
+                "Google App Password with NO spaces (NOT your normal Gmail password), and 2-Step Verification " +
+                "is ON for that Google account. Generate a fresh one at https://myaccount.google.com/apppasswords"
             );
         } else {
             console.log("✅ Nodemailer transporter verified — ready to send contact form emails.");
@@ -180,14 +211,14 @@ router.post("/submit", async (req, res) => {
         // other, and the 10s timeouts on the mail transporter (above)
         // put a hard ceiling on the worst case.
         const emailPromise = (async () => {
-            if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+            if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
                 console.warn("⚠️  Contact form: GMAIL_USER / GMAIL_APP_PASSWORD not set — skipping email notification.");
                 return false;
             }
             try {
-                await mailTransporter.sendMail({
-                    from: `"Pinnacle Scholars Website" <${process.env.GMAIL_USER}>`,
-                    to: process.env.CONTACT_NOTIFY_EMAIL || process.env.GMAIL_USER,
+                const result = await sendContactEmail({
+                    from: `"Pinnacle Scholars Website" <${GMAIL_USER}>`,
+                    to: process.env.CONTACT_NOTIFY_EMAIL || GMAIL_USER,
                     replyTo: email,
                     subject: `New Contact Form Enquiry — ${name}`,
                     html: `
@@ -200,13 +231,13 @@ router.post("/submit", async (req, res) => {
                         <p><strong>Message:</strong><br>${message}</p>
                     `
                 });
-                console.log("✅ Contact form: email sent to", process.env.CONTACT_NOTIFY_EMAIL || process.env.GMAIL_USER);
+                console.log(`✅ Contact form: email sent to ${process.env.CONTACT_NOTIFY_EMAIL || GMAIL_USER} via port ${result.via}`);
                 return true;
             } catch (mailErr) {
                 // Log the FULL error (not just .message) — Nodemailer/Gmail auth
                 // failures (wrong app password, 2FA not enabled, etc.) usually
                 // carry a `.code` / `.response` with the real reason.
-                console.error("❌ Contact form email failed:", {
+                console.error("❌ Contact form email failed on BOTH ports (465 and 587):", {
                     message: mailErr.message,
                     code: mailErr.code,
                     response: mailErr.response

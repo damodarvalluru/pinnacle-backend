@@ -77,6 +77,42 @@ function initializeCronJobs() {
             console.log('Certificate Cron Error:', err);
         }
     });
+
+    // ------------------------------------------------------------
+    // KEEP-ALIVE SELF-PING
+    // FIX: on Render's free tier, a web service with no traffic for
+    // ~15 minutes is put to sleep. The NEXT request has to "wake" the
+    // whole container from a cold start — this alone can take
+    // anywhere from 30 seconds to a few minutes, which is almost
+    // certainly the real cause of the contact form "taking 2-3
+    // minutes to deliver". It affects every route (DB, email,
+    // WhatsApp all included), not just the notification logic.
+    // Pinging our own /api/backend-status endpoint every 10 minutes
+    // keeps the container warm so a real visitor's submission never
+    // has to pay that cold-start cost.
+    // SELF_URL should be set in the Render env vars to this exact
+    // service's public URL (e.g. https://pinnacle-backend-5i7n.onrender.com).
+    // If it isn't set, this simply logs a warning once and skips —
+    // it never breaks the server.
+    // ------------------------------------------------------------
+    const selfUrl = process.env.SELF_URL;
+    if (selfUrl) {
+        cron.schedule('*/10 * * * *', async () => {
+            try {
+                const response = await fetch(`${selfUrl.replace(/\/$/, "")}/api/backend-status`);
+                console.log(`🔄 Keep-alive ping: ${response.status}`);
+            } catch (err) {
+                console.log('Keep-alive ping failed (server may still be waking up):', err.message);
+            }
+        });
+        console.log(`🔄 Keep-alive ping scheduled every 10 minutes against ${selfUrl}`);
+    } else {
+        console.warn(
+            '⚠️  SELF_URL is not set — keep-alive ping is disabled, so this service may cold-start ' +
+            'and cause multi-minute delays on the first request after inactivity. Set SELF_URL in your ' +
+            'Render environment variables to this service\'s public URL to fix that.'
+        );
+    }
 }
 
 initializeCronJobs();
