@@ -152,26 +152,55 @@ router.post('/register', async (req, res) => {
         FACULTY ID GENERATION
         Current format maintained:
         PS-FAC-2026-XXXX
+
+        FIX: this used to base the next number on the raw
+        auto-increment `id` primary key (MAX(id) + 1). That
+        column is NOT a reliable source for the visible sequence
+        number - it grows every time a row is inserted OR even
+        attempted (failed inserts, deleted test rows, manual
+        DB edits, etc. all burn id values without ever showing
+        up as a faculty_id). That's exactly why the generated
+        IDs were jumping around (0001, 0002, 30002, 60002,...)
+        instead of going up by 1 each time.
+
+        Fix: look at the faculty_id values we've actually issued
+        for the current year, take the highest numeric suffix,
+        and increment THAT. This is self-correcting - it always
+        continues from the last ID a faculty member was actually
+        given, regardless of what the underlying `id` column
+        looks like, and it naturally restarts at 0001 when the
+        year changes.
         */
         const currentYear =
         new Date().getFullYear();
 
         const [facultyRows] = await pool.query(
 
-    `SELECT id
+    `SELECT faculty_id
      FROM faculty
-     ORDER BY id DESC
-     LIMIT 1`
+     WHERE faculty_id LIKE ?
+     ORDER BY CAST(SUBSTRING_INDEX(faculty_id, '-', -1) AS UNSIGNED) DESC
+     LIMIT 1`,
+
+    [`PS-FAC-${currentYear}-%`]
 
 );
 
 
-const facultyNumber =
-facultyRows.length > 0
-?
-facultyRows[0].id + 1
-:
-1;
+let facultyNumber = 1;
+
+if (facultyRows.length > 0) {
+
+    const lastSuffix =
+    facultyRows[0].faculty_id.split('-').pop();
+
+    const lastNumber =
+    parseInt(lastSuffix, 10);
+
+    facultyNumber =
+    isNaN(lastNumber) ? 1 : lastNumber + 1;
+
+}
 
 
 
