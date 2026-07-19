@@ -66,6 +66,53 @@ async function ensureTable() {
 const GMAIL_USER = (process.env.GMAIL_USER || "").trim();
 const GMAIL_APP_PASSWORD = (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "");
 
+// FIX #4: third-tier fallback over HTTPS (port 443) via the Resend
+// API. Render logs showed port 465 timing out and port 587 was also
+// failing to verify - that pattern (both SMTP ports unreachable)
+// means outbound SMTP itself is being blocked/throttled by the
+// host's network, not a Gmail credentials problem. No amount of
+// SMTP retrying fixes that, because SMTP as a protocol is what's
+// blocked. Resend's API runs over plain HTTPS, the same port your
+// app already uses for every other outbound call (Razorpay, Twilio),
+// so it isn't subject to that block.
+// This is OPTIONAL: if RESEND_API_KEY / RESEND_FROM aren't set in
+// the environment, this fallback is simply skipped and behavior is
+// identical to before. To enable it:
+//   1. Create a free account at https://resend.com
+//   2. Verify a sending domain (or use their test address during
+//      setup) and generate an API key.
+//   3. Set RESEND_API_KEY and RESEND_FROM (e.g. "Pinnacle Scholars
+//      <noreply@yourdomain.com>") as environment variables on Render.
+const RESEND_API_KEY = (process.env.RESEND_API_KEY || "").trim();
+const RESEND_FROM = (process.env.RESEND_FROM || "").trim();
+const RESEND_CONFIGURED = Boolean(RESEND_API_KEY && RESEND_FROM);
+
+async function sendViaResendHttp(mailOptions) {
+    const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            from: RESEND_FROM,
+            to: [mailOptions.to],
+            reply_to: mailOptions.replyTo,
+            subject: mailOptions.subject,
+            html: mailOptions.html
+        })
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.text().catch(() => "");
+        const httpErr = new Error(`Resend API error ${response.status}: ${errorBody}`);
+        httpErr.code = `RESEND_HTTP_${response.status}`;
+        throw httpErr;
+    }
+
+    return response.json();
+}
+
 function buildTransporter(port, secure) {
     return nodemailer.createTransport({
         host: "smtp.gmail.com",
@@ -84,6 +131,8 @@ function buildTransporter(port, secure) {
 const mailTransporterPrimary = buildTransporter(465, true);
 const mailTransporterFallback = buildTransporter(587, false);
 
+const CONNECTION_LEVEL_CODES = ["ETIMEDOUT", "ECONNECTION", "ESOCKET", "ECONNREFUSED"];
+
 async function sendContactEmail(mailOptions) {
     try {
         await mailTransporterPrimary.sendMail(mailOptions);
@@ -91,12 +140,20 @@ async function sendContactEmail(mailOptions) {
     } catch (primaryErr) {
         // Only retry on connection-level failures — an auth rejection
         // (wrong password) will fail on 587 too, so don't waste time.
-        const connectionLevel = ["ETIMEDOUT", "ECONNECTION", "ESOCKET", "ECONNREFUSED"].includes(primaryErr.code);
-        if (!connectionLevel) throw primaryErr;
+        if (!CONNECTION_LEVEL_CODES.includes(primaryErr.code)) throw primaryErr;
 
         console.warn("⚠️  Port 465 email send failed, retrying on port 587 (STARTTLS)...", primaryErr.code);
-        await mailTransporterFallback.sendMail(mailOptions);
-        return { sent: true, via: "587" };
+        try {
+            await mailTransporterFallback.sendMail(mailOptions);
+            return { sent: true, via: "587" };
+        } catch (fallbackErr) {
+            const fallbackConnectionLevel = CONNECTION_LEVEL_CODES.includes(fallbackErr.code);
+            if (!fallbackConnectionLevel || !RESEND_CONFIGURED) throw fallbackErr;
+
+            console.warn("⚠️  Port 587 email send also failed, retrying via Resend HTTPS API...", fallbackErr.code);
+            await sendViaResendHttp(mailOptions);
+            return { sent: true, via: "resend-http" };
+        }
     }
 }
 
@@ -153,18 +210,26 @@ if (GMAIL_USER && GMAIL_APP_PASSWORD) {
                 return;
             }
 
-            console.error("❌ Nodemailer transporter verification FAILED on both ports — emails will not send:", {
+            console.error("❌ Nodemailer transporter verification FAILED on both ports — SMTP emails will not send:", {
                 port465: { message: primaryErr.message, code: primaryErr.code },
                 port587: { message: fallbackErr.message, code: fallbackErr.code }
             });
             console.error(
                 "   ➜ Both ports timed out, which usually means outbound SMTP is being blocked/throttled by " +
-                "the host's network rather than a credentials problem. Check: GMAIL_USER is a full Gmail " +
-                "address, GMAIL_APP_PASSWORD is the 16-character Google App Password with NO spaces, and " +
-                "2-Step Verification is ON. If credentials are confirmed correct and this persists, the host " +
-                "may be blocking outbound SMTP entirely, in which case an HTTPS-based email API " +
-                "(e.g. SendGrid, Mailgun, Resend) instead of direct SMTP would be the reliable fix."
+                "the host's network rather than a credentials problem."
             );
+            if (RESEND_CONFIGURED) {
+                console.log(
+                    "✅ Resend HTTPS fallback is configured (RESEND_API_KEY / RESEND_FROM set) — contact form " +
+                    "emails will still go out via Resend instead of SMTP."
+                );
+            } else {
+                console.error(
+                    "   ➜ Resend HTTPS fallback is NOT configured yet, so email is currently fully down. Set " +
+                    "RESEND_API_KEY and RESEND_FROM in the environment to route around the SMTP block " +
+                    "(see comments above GMAIL_USER for setup steps)."
+                );
+            }
         });
     });
 } else {
@@ -427,7 +492,12 @@ router.get("/diagnostics", async (req, res) => {
             gmailAppPasswordSet: Boolean(GMAIL_APP_PASSWORD),
             gmailAppPasswordLength: GMAIL_APP_PASSWORD.length || 0, // should be 16
             verified: false,
-            error: null
+            verifiedVia: null, // "465", "587", or null
+            error: null,
+            resendFallbackConfigured: RESEND_CONFIGURED,
+            resendFallbackNote: RESEND_CONFIGURED
+                ? "Resend HTTPS fallback is set up — emails will send via Resend if both SMTP ports fail."
+                : "Resend HTTPS fallback is NOT set up. If SMTP is blocked on this host, set RESEND_API_KEY and RESEND_FROM to fix email delivery."
         },
         whatsapp: {
             configured: Boolean(TWILIO_SID && TWILIO_AUTH_TOKEN && TWILIO_WHATSAPP_FROM && CONTACT_NOTIFY_WHATSAPP),
@@ -448,8 +518,19 @@ router.get("/diagnostics", async (req, res) => {
         try {
             await mailTransporterPrimary.verify();
             report.email.verified = true;
-        } catch (err) {
-            report.email.error = `${err.code || "ERROR"}: ${err.message}`;
+            report.email.verifiedVia = "465";
+        } catch (primaryErr) {
+            try {
+                await mailTransporterFallback.verify();
+                report.email.verified = true;
+                report.email.verifiedVia = "587";
+                report.email.error = `Port 465 failed (${primaryErr.code || "ERROR"}), but port 587 works, so email is still sending fine.`;
+            } catch (fallbackErr) {
+                report.email.error =
+                    `Both SMTP ports failed — 465: ${primaryErr.code || "ERROR"}: ${primaryErr.message} | ` +
+                    `587: ${fallbackErr.code || "ERROR"}: ${fallbackErr.message}` +
+                    (RESEND_CONFIGURED ? " (Resend HTTPS fallback will be used instead)" : "");
+            }
         }
     } else {
         report.email.error = "GMAIL_USER / GMAIL_APP_PASSWORD missing in environment.";
