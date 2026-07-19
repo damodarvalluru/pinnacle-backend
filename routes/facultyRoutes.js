@@ -148,6 +148,59 @@ router.post('/register', async (req, res) => {
             });
 
         }
+
+        // A date of birth can never be in the future, and a faculty
+        // member can't have an enrollment date in the future either.
+        // This is the real source of truth — the frontend date
+        // pickers are also restricted, but that alone can be
+        // bypassed by calling this API directly.
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+
+        if (dobDate.getTime() > todayEnd.getTime()) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                "Date of Birth cannot be a future date."
+
+            });
+
+        }
+
+        if (enrollmentDate) {
+
+            const enrollmentDateObj = new Date(enrollmentDate);
+
+            if (isNaN(enrollmentDateObj.getTime())) {
+
+                return res.status(400).json({
+
+                    success: false,
+
+                    message:
+                    "Invalid enrollment date"
+
+                });
+
+            }
+
+            if (enrollmentDateObj.getTime() > todayEnd.getTime()) {
+
+                return res.status(400).json({
+
+                    success: false,
+
+                    message:
+                    "Enrollment Date cannot be a future date."
+
+                });
+
+            }
+
+        }
         /*
         FACULTY ID GENERATION
         Current format maintained:
