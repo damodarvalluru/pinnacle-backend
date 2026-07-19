@@ -100,26 +100,72 @@ async function sendContactEmail(mailOptions) {
     }
 }
 
-// Verify the primary transporter once at startup so misconfigured
-// Gmail credentials (wrong app password, 2FA not enabled, etc.) show
-// up clearly in the server logs immediately, instead of silently
+// Verify transporters once at startup so misconfigured Gmail
+// credentials (wrong app password, 2FA not enabled, etc.) show up
+// clearly in the server logs immediately, instead of silently
 // failing only when a real visitor submits the form.
+//
+// FIX: this used to verify ONLY the primary (465) transporter and
+// log a flat "emails will not send" failure the moment that one
+// call timed out - even though sendContactEmail() already falls
+// back to port 587 for exactly that class of error. That made the
+// startup log say email was completely broken when it may well
+// still work via the fallback port, which is misleading and (on
+// hosts like Render, where outbound port 465 is sometimes
+// slow/unreliable while 587 works fine) was the normal case rather
+// than the exception. Now: if the primary fails with a
+// connection-level error, the fallback is verified too before we
+// decide email is actually down.
 if (GMAIL_USER && GMAIL_APP_PASSWORD) {
-    mailTransporterPrimary.verify((verifyErr) => {
-        if (verifyErr) {
+    const CONNECTION_LEVEL_CODES = ["ETIMEDOUT", "ECONNECTION", "ESOCKET", "ECONNREFUSED"];
+
+    mailTransporterPrimary.verify((primaryErr) => {
+        if (!primaryErr) {
+            console.log("✅ Nodemailer transporter verified on port 465 — ready to send contact form emails.");
+            return;
+        }
+
+        const isConnectionLevel = CONNECTION_LEVEL_CODES.includes(primaryErr.code);
+        if (!isConnectionLevel) {
+            // Auth/credential rejection — port 587 will fail the same way, no point checking it.
             console.error("❌ Nodemailer transporter verification FAILED — emails will not send:", {
-                message: verifyErr.message,
-                code: verifyErr.code,
-                response: verifyErr.response
+                message: primaryErr.message,
+                code: primaryErr.code,
+                response: primaryErr.response
             });
             console.error(
                 "   ➜ Check: GMAIL_USER is a full Gmail address, GMAIL_APP_PASSWORD is the 16-character " +
                 "Google App Password with NO spaces (NOT your normal Gmail password), and 2-Step Verification " +
                 "is ON for that Google account. Generate a fresh one at https://myaccount.google.com/apppasswords"
             );
-        } else {
-            console.log("✅ Nodemailer transporter verified — ready to send contact form emails.");
+            return;
         }
+
+        console.warn(`⚠️  Port 465 verification failed (${primaryErr.code}), checking fallback port 587...`);
+
+        mailTransporterFallback.verify((fallbackErr) => {
+            if (!fallbackErr) {
+                console.log(
+                    "✅ Nodemailer transporter verified on fallback port 587 — contact form emails will still " +
+                    "send (port 465 is currently slow/blocked on this network, but sendContactEmail() already " +
+                    "falls back to 587 automatically)."
+                );
+                return;
+            }
+
+            console.error("❌ Nodemailer transporter verification FAILED on both ports — emails will not send:", {
+                port465: { message: primaryErr.message, code: primaryErr.code },
+                port587: { message: fallbackErr.message, code: fallbackErr.code }
+            });
+            console.error(
+                "   ➜ Both ports timed out, which usually means outbound SMTP is being blocked/throttled by " +
+                "the host's network rather than a credentials problem. Check: GMAIL_USER is a full Gmail " +
+                "address, GMAIL_APP_PASSWORD is the 16-character Google App Password with NO spaces, and " +
+                "2-Step Verification is ON. If credentials are confirmed correct and this persists, the host " +
+                "may be blocking outbound SMTP entirely, in which case an HTTPS-based email API " +
+                "(e.g. SendGrid, Mailgun, Resend) instead of direct SMTP would be the reliable fix."
+            );
+        });
     });
 } else {
     console.warn("⚠️  GMAIL_USER / GMAIL_APP_PASSWORD not set in environment — contact form emails are disabled.");
