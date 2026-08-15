@@ -447,6 +447,9 @@ router.post('/login', async (req,res)=>{
 
         if(rows.length > 0){
 
+            req.session.faculty = { id: rows[0].faculty_id, expiresAt: Date.now() + (30 * 60 * 1000) };
+            req.session.cookie.maxAge = 30 * 60 * 1000;
+
 
             res.status(200).json({
 

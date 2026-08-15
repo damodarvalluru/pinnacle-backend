@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
 const studentRoutes = require('./routes/studentRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
@@ -30,6 +31,14 @@ app.use(cors({
     origin: ['http://127.0.0.1:5500', 'http://localhost:5500','https://damodarvalluru.github.io'],
     methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
     credentials: true
+}));
+app.set('trust proxy', 1);
+app.use(session({
+    name: 'pinnacle.sid',
+    secret: process.env.SESSION_SECRET || 'replace-this-development-session-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' }
 }));
 
 // 3. Payload parsing middleware structures

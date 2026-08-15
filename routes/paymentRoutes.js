@@ -65,8 +65,12 @@ router.post('/verify-payment', async (req, res) => {
             .update(body.toString())
             .digest('hex');
 
-        const verified =
-            expectedSignature === razorpay_signature;
+        const providedSignature = Buffer.from(razorpay_signature || '', 'hex');
+        const expectedSignatureBuffer = Buffer.from(expectedSignature, 'hex');
+        const verified = providedSignature.length === expectedSignatureBuffer.length && crypto.timingSafeEqual(
+            expectedSignatureBuffer,
+            providedSignature
+        );
 
         if (!verified) {
 
@@ -75,6 +79,15 @@ router.post('/verify-payment', async (req, res) => {
                 message: 'Payment Verification Failed'
             });
         }
+
+        // Do not trust a fee amount posted by the browser. Razorpay is the
+        // source of truth for the order, payment amount and payment state.
+        const razorpayPayment = await razorpay.payments.fetch(razorpay_payment_id);
+        if (razorpayPayment.order_id !== razorpay_order_id ||
+            !['captured', 'authorized'].includes(razorpayPayment.status)) {
+            return res.status(400).json({ success: false, message: 'Payment status could not be verified' });
+        }
+        const verifiedPaymentAmount = Number(razorpayPayment.amount) / 100;
 /*
 DATABASE SAFE TRANSACTION
 */
@@ -114,8 +127,21 @@ try {
 const totalFees =
     Number(student.total_fees || 0);
 
-const paymentAmount =
-    Number(paid_amount || 0);
+const paymentAmount = verifiedPaymentAmount;
+
+if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+    await connection.rollback();
+    return res.status(400).json({ success: false, message: 'Invalid payment amount' });
+}
+
+const [previousPayment] = await connection.query(
+    'SELECT razorpay_payment_id FROM payment_history WHERE razorpay_payment_id = ? LIMIT 1',
+    [razorpay_payment_id]
+);
+if (previousPayment.length) {
+    await connection.rollback();
+    return res.status(409).json({ success: false, message: 'This payment has already been processed' });
+}
 
 const updatedPaid =
     currentPaid + paymentAmount;
@@ -180,7 +206,7 @@ if (updatedPaid > totalFees) {
             student_id,
             razorpay_order_id,
             razorpay_payment_id,
-            paid_amount,
+            paymentAmount,
             payment_type,
             'SUCCESS'
         ]
@@ -250,4 +276,3 @@ const updatedStudent =
 });
 
 module.exports = router;
-

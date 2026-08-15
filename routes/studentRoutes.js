@@ -376,6 +376,25 @@ console.error(
         });
     }
 });
+/* Secure student login used by the portal.  The existing GET lookup remains
+   available for its established workflows, while this endpoint creates the
+   25-minute server session after validating both credentials. */
+router.post('/login', async (req, res) => {
+    try {
+        const studentId = (req.body.student_id || '').trim();
+        const dob = (req.body.dob || '').trim();
+        if (!studentId || !dob) return res.status(400).json({ success: false, message: 'Student ID and DOB required' });
+        const [rows] = await pool.query('SELECT * FROM students WHERE student_id = ? AND dob = ?', [studentId, dob]);
+        if (!rows.length) return res.status(401).json({ success: false, message: 'Invalid Student ID or DOB' });
+        req.session.student = { id: rows[0].student_id, expiresAt: Date.now() + (25 * 60 * 1000) };
+        req.session.cookie.maxAge = 25 * 60 * 1000;
+        return res.json({ success: true, student: rows[0] });
+    } catch (error) {
+        console.error('Student Login Error:', error.message);
+        return res.status(500).json({ success: false, message: 'Backend server error' });
+    }
+});
+
 /*
 ====================================================
 FORGOT STUDENT ID

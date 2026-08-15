@@ -18,8 +18,8 @@ router.post('/publish-test', async (req, res) => {
     !faculty_id ||
     !faculty_name ||
     !title ||
-    !Array.isArray(questions) ||
-    questions.length === 0
+    !((Array.isArray(questions) && questions.length > 0) ||
+      (typeof questions === 'string' && questions.trim().length > 0))
 ){
     return res.status(400).json({
         success:false,
@@ -44,7 +44,7 @@ router.post('/publish-test', async (req, res) => {
 
             [
                 testId,
-                test_type,
+                String(test_type).trim().toLowerCase(),
                 faculty_id,
                 faculty_name,
                 title,
@@ -328,7 +328,7 @@ try{
     `
     SELECT *
     FROM tests
-    WHERE test_type=?
+    WHERE LOWER(test_type)=LOWER(?)
     ORDER BY published_at DESC
     LIMIT 1
     `,
@@ -385,7 +385,7 @@ router.get('/:type', async (req, res) => {
 
             `SELECT *
              FROM tests
-             WHERE test_type=?
+             WHERE LOWER(test_type)=LOWER(?)
              ORDER BY published_at DESC`,
 
             [type]
@@ -422,4 +422,3 @@ router.get('/:type', async (req, res) => {
 });
 
 module.exports = router;
-
