@@ -167,6 +167,133 @@ new Date(student.dob)
         });
     }
 });
+// INITIALIZE TEST PROGRESS TABLE
+(async () => {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS test_progress (
+                student_id VARCHAR(100) NOT NULL,
+                test_id VARCHAR(100) NOT NULL,
+                answers JSON,
+                current_index INT DEFAULT 0,
+                started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (student_id, test_id)
+            )
+        `);
+        console.log('✅ test_progress table active');
+    } catch (err) {
+        console.error('❌ test_progress initialization error:', err.message);
+    }
+})();
+
+// CHECK TEST ATTEMPT STATUS
+router.get('/attempt-status/:studentId/:testId', async (req, res) => {
+    try {
+        const { studentId, testId } = req.params;
+        const [existing] = await db.execute(
+            `SELECT result_id, score, total_marks, submitted_at FROM test_results WHERE student_id=? AND test_id=?`,
+            [studentId, testId]
+        );
+        if (existing.length > 0) {
+            return res.json({
+                success: true,
+                attempted: true,
+                message: "you cannot take this test again",
+                result: existing[0]
+            });
+        }
+        res.json({
+            success: true,
+            attempted: false
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Unable to check attempt status" });
+    }
+});
+
+// SAVE TEST PROGRESS
+router.post('/save-progress', async (req, res) => {
+    try {
+        const { student_id, test_id, answers, current_index } = req.body;
+        if (!student_id || !test_id) {
+            return res.status(400).json({ success: false, message: "Missing required parameters" });
+        }
+        const [existingResult] = await db.execute(
+            `SELECT result_id FROM test_results WHERE student_id=? AND test_id=?`,
+            [student_id, test_id]
+        );
+        if (existingResult.length > 0) {
+            return res.json({
+                success: false,
+                attempted: true,
+                message: "you cannot take this test again"
+            });
+        }
+
+        const answersStr = typeof answers === 'string' ? answers : JSON.stringify(answers || {});
+        const idx = typeof current_index === 'number' ? current_index : 0;
+
+        await db.execute(
+            `INSERT INTO test_progress (student_id, test_id, answers, current_index)
+             VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE answers = VALUES(answers), current_index = VALUES(current_index)`,
+            [student_id, test_id, answersStr, idx]
+        );
+
+        res.json({ success: true, message: "Progress saved successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Unable to save progress" });
+    }
+});
+
+// FETCH TEST PROGRESS
+router.get('/progress/:studentId/:testId', async (req, res) => {
+    try {
+        const { studentId, testId } = req.params;
+        const [existingResult] = await db.execute(
+            `SELECT result_id FROM test_results WHERE student_id=? AND test_id=?`,
+            [studentId, testId]
+        );
+        if (existingResult.length > 0) {
+            return res.json({
+                success: true,
+                attempted: true,
+                message: "you cannot take this test again"
+            });
+        }
+
+        const [rows] = await db.execute(
+            `SELECT answers, current_index, started_at FROM test_progress WHERE student_id=? AND test_id=?`,
+            [studentId, testId]
+        );
+
+        if (rows.length === 0) {
+            return res.json({ success: true, progress: null, attempted: false });
+        }
+
+        let answers = rows[0].answers;
+        try {
+            if (typeof answers === 'string') answers = JSON.parse(answers);
+        } catch {}
+
+        res.json({
+            success: true,
+            attempted: false,
+            progress: {
+                answers: answers || {},
+                current_index: rows[0].current_index || 0,
+                started_at: rows[0].started_at
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Unable to fetch progress" });
+    }
+});
+
 // SUBMIT RESULT
 router.post('/submit-result', async (req, res) => {
 
@@ -213,7 +340,7 @@ if(existing.length){
 
         success:false,
         message:
-        "Result Already Submitted"
+        "Result Already Submitted. you cannot take this test again"
     });
 }
         await db.execute(
@@ -239,6 +366,16 @@ if(existing.length){
                 total_marks
             ]
         );
+
+        // Delete test_progress upon successful submission
+        try {
+            await db.execute(
+                `DELETE FROM test_progress WHERE student_id=? AND test_id=?`,
+                [student_id, test_id]
+            );
+        } catch (delErr) {
+            console.error('Progress cleanup error:', delErr);
+        }
 
         res.json({
             success: true,
