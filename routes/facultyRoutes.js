@@ -4,6 +4,10 @@ const router = express.Router();
 
 const pool = require('../db');
 
+const {
+    validateFacultyEligibility
+} = require('./dobEligibility');
+
 
 /*
 ====================================================
@@ -132,43 +136,29 @@ router.post('/register', async (req, res) => {
         DOB VALIDATION
         */
 
-        const dobDate = new Date(dob);
+        // A date of birth can never be in the future. This is the real source
+        // of truth - the frontend date picker is also restricted, but that alone
+        // can be bypassed by calling this API directly. The shared validator
+        // additionally enforces a strict YYYY-MM-DD format (so 31 February is
+        // rejected instead of rolling over to 2 March) and the minimum faculty
+        // age, and it runs before the connection/transaction are opened.
+        const facultyEligibility = validateFacultyEligibility(dob);
 
-
-        if(isNaN(dobDate.getTime())){
-
-
-            return res.status(400).json({
-
-                success:false,
-
-                message:
-                "Invalid date of birth"
-
-            });
-
-        }
-
-        // A date of birth can never be in the future, and a faculty
-        // member can't have an enrollment date in the future either.
-        // This is the real source of truth — the frontend date
-        // pickers are also restricted, but that alone can be
-        // bypassed by calling this API directly.
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
-
-        if (dobDate.getTime() > todayEnd.getTime()) {
+        if (!facultyEligibility.ok) {
 
             return res.status(400).json({
 
                 success: false,
 
-                message:
-                "Date of Birth cannot be a future date."
+                message: facultyEligibility.message
 
             });
 
         }
+
+        // A faculty member can't have an enrollment date in the future either.
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
 
         if (enrollmentDate) {
 

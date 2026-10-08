@@ -4,6 +4,10 @@ const router = express.Router();
 
 const pool = require('../db');
 
+const {
+    validateStudentEligibility
+} = require('./dobEligibility');
+
 /*
 REGISTER STUDENT
 */
@@ -42,14 +46,18 @@ if (name.length < 3) {
     });
 }
 
-// Date validation
-const dobDate = new Date(dob);
+// Date and program-eligibility validation.
+// The client-side date picker is only a convenience and can be bypassed by
+// posting to this endpoint directly, so the real rules are enforced here, on
+// the server. This runs before the connection and transaction are opened so a
+// rejected applicant never reaches the database or consumes an ID.
+const eligibility = validateStudentEligibility(name, dob, domain);
 
-if (isNaN(dobDate.getTime())) {
+if (!eligibility.ok) {
 
     return res.status(400).json({
         success: false,
-        message: "Invalid date of birth format"
+        message: eligibility.message
     });
 }
 
