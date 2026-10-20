@@ -392,10 +392,17 @@ router.post('/login', async (req, res) => {
         const studentId = (req.body.student_id || '').trim();
         const dob = (req.body.dob || '').trim();
         if (!studentId || !dob) return res.status(400).json({ success: false, message: 'Student ID and DOB required' });
-        const [rows] = await pool.query('SELECT * FROM students WHERE student_id = ? AND dob = ?', [studentId, dob]);
+        const [rows] = await pool.query(
+            "SELECT *, DATE_FORMAT(dob, '%Y-%m-%d') AS dob_date FROM students WHERE student_id = ? AND dob = ?",
+            [studentId, dob]
+        );
         if (!rows.length) return res.status(401).json({ success: false, message: 'Invalid Student ID or DOB' });
         req.session.student = { id: rows[0].student_id, expiresAt: Date.now() + (25 * 60 * 1000) };
         req.session.cookie.maxAge = 25 * 60 * 1000;
+        // dob_date is the DB's own calendar date (YYYY-MM-DD), immune to the
+        // timezone drift a JS Date -> ISO conversion would introduce. The
+        // portal passes it back to the DOB-guarded history/receipt/review
+        // endpoints, which compare against the DATE column directly.
         return res.json({ success: true, student: rows[0] });
     } catch (error) {
         console.error('Student Login Error:', error.message);

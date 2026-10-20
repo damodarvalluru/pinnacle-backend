@@ -275,4 +275,142 @@ const updatedStudent =
     }
 });
 
+/*
+PAYMENT HISTORY
+Returns every recorded fee payment for one student, newest first, together with
+the live fee summary. The caller proves ownership with the same student_id +
+date-of-birth pair the result portal already uses, so a student can only ever
+read their own receipts.
+*/
+router.get('/history/:studentId', async (req, res) => {
+
+    try {
+
+        const studentId = (req.params.studentId || '').trim();
+        const dob = (req.query.dob || '').trim();
+
+        if (!studentId || !dob) {
+            return res.status(400).json({
+                success: false,
+                message: 'Student ID and DOB are required'
+            });
+        }
+
+        const [studentRows] = await pool.query(
+            `SELECT student_id, name, domain, total_fees, fees_paid, remaining_fees
+             FROM students
+             WHERE student_id = ? AND dob = ?`,
+            [studentId, dob]
+        );
+
+        if (studentRows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid Credentials'
+            });
+        }
+
+        const [payments] = await pool.query(
+            `SELECT
+                razorpay_order_id,
+                razorpay_payment_id,
+                amount_paid,
+                payment_type,
+                payment_status,
+                paid_at
+             FROM payment_history
+             WHERE student_id = ?
+             ORDER BY paid_at DESC`,
+            [studentId]
+        );
+
+        res.json({
+            success: true,
+            student: studentRows[0],
+            payments
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Unable To Fetch Payment History'
+        });
+    }
+});
+
+/*
+SINGLE RECEIPT
+Fetches one verified payment so a saved receipt can be re-opened from the
+history list. Ownership is proven with student_id + DOB, exactly as above.
+*/
+router.get('/receipt/:studentId/:paymentId', async (req, res) => {
+
+    try {
+
+        const studentId = (req.params.studentId || '').trim();
+        const paymentId = (req.params.paymentId || '').trim();
+        const dob = (req.query.dob || '').trim();
+
+        if (!studentId || !paymentId || !dob) {
+            return res.status(400).json({
+                success: false,
+                message: 'Student ID, payment ID and DOB are required'
+            });
+        }
+
+        const [studentRows] = await pool.query(
+            `SELECT student_id, name, domain, total_fees, fees_paid, remaining_fees
+             FROM students
+             WHERE student_id = ? AND dob = ?`,
+            [studentId, dob]
+        );
+
+        if (studentRows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid Credentials'
+            });
+        }
+
+        const [paymentRows] = await pool.query(
+            `SELECT
+                razorpay_order_id,
+                razorpay_payment_id,
+                amount_paid,
+                payment_type,
+                payment_status,
+                paid_at
+             FROM payment_history
+             WHERE student_id = ? AND razorpay_payment_id = ?
+             LIMIT 1`,
+            [studentId, paymentId]
+        );
+
+        if (paymentRows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Payment record not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            student: studentRows[0],
+            payment: paymentRows[0]
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Unable To Fetch Receipt'
+        });
+    }
+});
+
 module.exports = router;

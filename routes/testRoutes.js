@@ -187,6 +187,26 @@ new Date(student.dob)
     }
 })();
 
+// INITIALIZE TEST RESPONSES TABLE (keeps submitted answers for review)
+(async () => {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS test_responses (
+                student_id VARCHAR(100) NOT NULL,
+                test_id VARCHAR(100) NOT NULL,
+                answers JSON,
+                score INT DEFAULT 0,
+                total_marks INT DEFAULT 0,
+                submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (student_id, test_id)
+            )
+        `);
+        console.log('✅ test_responses table active');
+    } catch (err) {
+        console.error('❌ test_responses initialization error:', err.message);
+    }
+})();
+
 // CHECK TEST ATTEMPT STATUS
 router.get('/attempt-status/:studentId/:testId', async (req, res) => {
     try {
@@ -304,7 +324,8 @@ router.post('/submit-result', async (req, res) => {
     student_name,
     test_id,
     score,
-    total_marks
+    total_marks,
+    answers
 } = req.body;
 
         const resultId =
@@ -366,6 +387,30 @@ if(existing.length){
                 total_marks
             ]
         );
+
+        // Preserve the submitted answers so the student can review them
+        // question-by-question from the portal after submission.
+        try {
+            await db.execute(
+                `INSERT INTO test_responses
+                 (student_id, test_id, answers, score, total_marks)
+                 VALUES (?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                    answers = VALUES(answers),
+                    score = VALUES(score),
+                    total_marks = VALUES(total_marks),
+                    submitted_at = CURRENT_TIMESTAMP`,
+                [
+                    student_id,
+                    test_id,
+                    JSON.stringify(answers || {}),
+                    score,
+                    total_marks
+                ]
+            );
+        } catch (respErr) {
+            console.error('Response save error:', respErr);
+        }
 
         // Delete test_progress upon successful submission
         try {
@@ -448,6 +493,121 @@ router.get('/result/:studentId', async (req, res) => {
         res.status(500).json({
             success:false,
             message:'Unable To Fetch Results'
+        });
+    }
+});
+
+// REVIEW SUBMITTED ANSWERS FOR A TEST
+router.get('/review/:studentId/:testId', async (req, res) => {
+
+    try {
+
+        const { studentId, testId } = req.params;
+        const dob = req.query.dob;
+
+        const [student] = await db.execute(
+            `SELECT student_id FROM students WHERE student_id=? AND dob=?`,
+            [studentId, dob]
+        );
+
+        if (student.length === 0) {
+            return res.json({
+                success: false,
+                message: 'Invalid Credentials'
+            });
+        }
+
+        const [resultRows] = await db.execute(
+            `SELECT score, total_marks, submitted_at
+             FROM test_results
+             WHERE student_id=? AND test_id=?`,
+            [studentId, testId]
+        );
+
+        if (resultRows.length === 0) {
+            return res.json({
+                success: false,
+                message: 'No Result Found For This Test'
+            });
+        }
+
+        const [testRows] = await db.execute(
+            `SELECT title, test_type, questions FROM tests WHERE test_id=?`,
+            [testId]
+        );
+
+        if (testRows.length === 0) {
+            return res.json({
+                success: false,
+                message: 'Test Not Found'
+            });
+        }
+
+        const [responseRows] = await db.execute(
+            `SELECT answers FROM test_responses WHERE student_id=? AND test_id=?`,
+            [studentId, testId]
+        );
+
+        let questions = [];
+        try {
+            questions = typeof testRows[0].questions === 'string'
+                ? JSON.parse(testRows[0].questions)
+                : (testRows[0].questions || []);
+        } catch (parseErr) {
+            console.error('Question parse error:', parseErr);
+            questions = [];
+        }
+
+        let submittedAnswers = {};
+        if (responseRows.length > 0) {
+            try {
+                submittedAnswers = typeof responseRows[0].answers === 'string'
+                    ? JSON.parse(responseRows[0].answers)
+                    : (responseRows[0].answers || {});
+            } catch (parseErr) {
+                console.error('Answer parse error:', parseErr);
+                submittedAnswers = {};
+            }
+        }
+
+        const review = questions.map((q, index) => {
+            const key = `q${index}`;
+            const given = submittedAnswers[key] !== undefined && submittedAnswers[key] !== null
+                ? String(submittedAnswers[key]).trim()
+                : null;
+            const correct = q && q.answer !== undefined && q.answer !== null
+                ? String(q.answer).trim()
+                : null;
+            return {
+                index,
+                subject: q ? q.subject : null,
+                type: q ? q.type : null,
+                question: q ? q.question : null,
+                options: q && Array.isArray(q.options) ? q.options : [],
+                givenAnswer: given,
+                correctAnswer: correct,
+                isCorrect: given !== null && correct !== null && given === correct
+            };
+        });
+
+        res.json({
+            success: true,
+            title: testRows[0].title,
+            test_type: testRows[0].test_type,
+            score: resultRows[0].score,
+            total_marks: resultRows[0].total_marks,
+            submitted_at: resultRows[0].submitted_at,
+            answersStored: responseRows.length > 0,
+            review
+        });
+
+    } catch(error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success:false,
+            message:'Unable To Fetch Review'
         });
     }
 });
