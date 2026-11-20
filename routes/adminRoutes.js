@@ -198,8 +198,11 @@ function parseQuestions(raw) {
 router.post('/login', async (req, res) => {
     const password = typeof req.body.password === 'string' ? req.body.password : '';
     const pin = typeof req.body.pin === 'string' ? req.body.pin : '';
-    if (!password || !pin) {
-        return res.status(400).json({ success: false, message: 'Password and PIN are required' });
+    // Exactly one credential is accepted per attempt: either password or PIN.
+    const passwordProvided = password.length > 0;
+    const pinProvided = pin.trim().length > 0;
+    if (passwordProvided === pinProvided) {
+        return res.status(400).json({ success: false, message: 'Provide either the admin password or the security PIN' });
     }
 
     const key = clientKey(req);
@@ -222,10 +225,11 @@ router.post('/login', async (req, res) => {
             [ADMIN_ID]
         );
         const cred = credRows[0];
-        const passwordOk = await bcrypt.compare(password, cred ? cred.password_hash : DUMMY_HASH);
-        const pinOk = await bcrypt.compare(pin, cred ? cred.pin_hash : DUMMY_HASH);
+        const passwordOk = await bcrypt.compare(passwordProvided ? password : '', cred ? cred.password_hash : DUMMY_HASH);
+        const pinOk = await bcrypt.compare(pinProvided ? pin : '', cred ? cred.pin_hash : DUMMY_HASH);
+        const credentialOk = passwordProvided ? passwordOk : pinOk;
 
-        if (!cred || !passwordOk || !pinOk) {
+        if (!cred || !credentialOk) {
             const expiredLock = attempt && attempt.locked_until && Number(attempt.locked_until) <= Date.now();
             const previousCount = expiredLock ? 0 : Number(attempt ? attempt.failed_count : 0);
             const previousLevel = expiredLock ? 0 : Number(attempt ? attempt.lock_level : 0);
