@@ -144,6 +144,45 @@ function direction(value) {
     return String(value).toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 }
 
+// Fee amounts are stored as currency, so normalise every write to two decimals.
+function currencyAmount(value, allowZero) {
+    if (value === null || value === undefined || String(value).trim() === '') return null;
+    const number = Number(String(value).trim());
+    if (!Number.isFinite(number)) return null;
+    if (number < 0 || (number === 0 && !allowZero)) return null;
+    return Math.round(number * 100) / 100;
+}
+
+function paymentDate(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return new Date().toISOString().slice(0, 19).replace('T', ' ');
+    // datetime-local values carry no timezone, so keep the entered wall-clock
+    // time instead of converting it with the server's timezone.
+    const local = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::(\d{2}))?/.exec(raw);
+    if (local) return local[1] + ' ' + local[2] + ':' + (local[3] || '00');
+    const parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return parsed.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function paymentType(value, fallback) {
+    const cleaned = text(value, 50).toUpperCase().replace(/[^A-Z0-9_-]+/g, '_');
+    return cleaned || fallback;
+}
+
+function paymentReference(value) {
+    const generated = 'ADMIN-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+    const supplied = text(value, 80).toUpperCase().replace(/[^A-Z0-9_-]+/g, '-');
+    if (!supplied) return generated;
+    return 'ADMIN-' + supplied.replace(/^ADMIN-/, '').slice(0, 72);
+}
+
+function feeStatus(row) {
+    if (Number(row.remaining_fees) <= 0) return 'Paid';
+    if (Number(row.fees_paid) <= 0) return 'Unpaid';
+    return 'Partial';
+}
+
 function parseQuestions(raw) {
     if (!raw) return [];
     let parsed = raw;
@@ -730,6 +769,199 @@ router.get('/fees/payments', requireAdmin, async (req, res) => {
     } catch (err) {
         console.error('Admin payments error:', err);
         res.status(500).json({ success: false, message: 'Could not load payment records' });
+    }
+});
+
+// Update a student's total fee structure. Paid amounts are never changed here;
+// only the derived outstanding balance is recalculated from the real records.
+router.patch('/fees/:studentId', requireAdmin, async (req, res) => {
+    const studentId = text(req.params.studentId, 30);
+    const totalFees = currencyAmount(req.body.totalFees, true);
+    if (!studentId || totalFees === null) {
+        return res.status(400).json({ success: false, message: 'A valid student and total fee amount are required' });
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [rows] = await connection.execute(
+            'SELECT student_id, total_fees, fees_paid, remaining_fees FROM students WHERE student_id = ? FOR UPDATE',
+            [studentId]
+        );
+        if (!rows.length) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: 'Student not found' });
+        }
+
+        const student = rows[0];
+        const paid = Number(student.fees_paid || 0);
+        if (totalFees < paid) {
+            await connection.rollback();
+            return res.status(400).json({ success: false, message: 'Total fees cannot be less than the amount already paid' });
+        }
+
+        const remaining = Math.round((totalFees - paid) * 100) / 100;
+        await connection.execute(
+            'UPDATE students SET total_fees = ?, remaining_fees = ? WHERE student_id = ?',
+            [totalFees, remaining, studentId]
+        );
+        await connection.commit();
+
+        const fee = { student_id: studentId, total_fees: totalFees, fees_paid: paid, remaining_fees: remaining };
+        return res.json({ success: true, message: 'Fee structure updated', fee: fee, status: feeStatus(fee) });
+    } catch (err) {
+        await connection.rollback();
+        console.error('Admin fee update error:', err);
+        return res.status(500).json({ success: false, message: 'Could not update the fee structure' });
+    } finally {
+        connection.release();
+    }
+});
+
+// Record a real manual payment against a student. The same columns used by
+// verified Razorpay payments are written; no synthetic student data is created.
+router.post('/fees/:studentId/payments', requireAdmin, async (req, res) => {
+    const studentId = text(req.params.studentId, 30);
+    const amount = currencyAmount(req.body.amount, false);
+    const paidAt = paymentDate(req.body.paidAt);
+    const type = paymentType(req.body.paymentType, 'ADMIN_MANUAL');
+    const reference = paymentReference(req.body.reference);
+    if (!studentId || amount === null || !paidAt) {
+        return res.status(400).json({ success: false, message: 'A valid amount and payment date are required' });
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [rows] = await connection.execute(
+            'SELECT student_id, total_fees, fees_paid, remaining_fees FROM students WHERE student_id = ? FOR UPDATE',
+            [studentId]
+        );
+        if (!rows.length) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: 'Student not found' });
+        }
+
+        const student = rows[0];
+        const remaining = Number(student.remaining_fees || 0);
+        if (amount > remaining) {
+            await connection.rollback();
+            return res.status(400).json({ success: false, message: 'Payment exceeds the outstanding fees' });
+        }
+
+        const [duplicates] = await connection.execute(
+            'SELECT id FROM payment_history WHERE razorpay_payment_id = ? LIMIT 1',
+            [reference]
+        );
+        if (duplicates.length) {
+            await connection.rollback();
+            return res.status(409).json({ success: false, message: 'That payment reference is already recorded' });
+        }
+
+        const paid = Math.round((Number(student.fees_paid || 0) + amount) * 100) / 100;
+        const newRemaining = Math.round((Number(student.total_fees || 0) - paid) * 100) / 100;
+        await connection.execute(
+            'UPDATE students SET fees_paid = ?, remaining_fees = ? WHERE student_id = ?',
+            [paid, Math.max(0, newRemaining), studentId]
+        );
+        const orderReference = 'ORD-' + reference.replace(/^ADMIN-/, '');
+        await connection.execute(
+            `INSERT INTO payment_history
+                (student_id, razorpay_order_id, razorpay_payment_id, amount_paid, payment_type, payment_status, paid_at)
+             VALUES (?, ?, ?, ?, ?, 'SUCCESS', ?)`,
+            [studentId, orderReference, reference, amount, type, paidAt]
+        );
+        await connection.commit();
+
+        const fee = { student_id: studentId, total_fees: Number(student.total_fees || 0), fees_paid: paid, remaining_fees: Math.max(0, newRemaining) };
+        return res.json({
+            success: true,
+            message: 'Payment recorded',
+            payment: { student_id: studentId, razorpay_payment_id: reference, amount_paid: amount, payment_type: type, payment_status: 'SUCCESS', paid_at: paidAt },
+            fee: fee,
+            status: feeStatus(fee)
+        });
+    } catch (err) {
+        await connection.rollback();
+        console.error('Admin payment record error:', err);
+        return res.status(500).json({ success: false, message: 'Could not record the payment' });
+    } finally {
+        connection.release();
+    }
+});
+
+// Edit an existing payment record. Only successful payments count toward the
+// student's paid total, so changing amount/status rebalances the fee record.
+router.patch('/fees/payments/:paymentId', requireAdmin, async (req, res) => {
+    const paymentId = parseInt(req.params.paymentId, 10);
+    const amount = currencyAmount(req.body.amount, false);
+    const paidAt = paymentDate(req.body.paidAt);
+    const rawStatus = String(req.body.paymentStatus || '').trim().toUpperCase();
+    const status = ['SUCCESS', 'FAILED', 'REFUNDED'].indexOf(rawStatus) >= 0 ? rawStatus : null;
+    const type = req.body.paymentType === undefined ? null : paymentType(req.body.paymentType, '');
+    if (!Number.isInteger(paymentId) || paymentId <= 0 || amount === null || !paidAt || !status || (req.body.paymentType !== undefined && !type)) {
+        return res.status(400).json({ success: false, message: 'A valid amount, status and payment date are required' });
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [paymentRows] = await connection.execute('SELECT * FROM payment_history WHERE id = ? LIMIT 1', [paymentId]);
+        if (!paymentRows.length) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: 'Payment record not found' });
+        }
+        const payment = paymentRows[0];
+        const studentId = String(payment.student_id || '').trim();
+        const [studentRows] = await connection.execute(
+            'SELECT student_id, total_fees, fees_paid, remaining_fees FROM students WHERE student_id = ? FOR UPDATE',
+            [studentId]
+        );
+        if (!studentRows.length) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: 'Student not found for this payment' });
+        }
+
+        const student = studentRows[0];
+        const oldContribution = String(payment.payment_status || '').toUpperCase() === 'SUCCESS' ? Number(payment.amount_paid || 0) : 0;
+        const newContribution = status === 'SUCCESS' ? amount : 0;
+        const paid = Math.round((Number(student.fees_paid || 0) - oldContribution + newContribution) * 100) / 100;
+        const total = Number(student.total_fees || 0);
+        if (paid < 0) {
+            await connection.rollback();
+            return res.status(400).json({ success: false, message: 'This update would make the paid amount negative' });
+        }
+        if (paid > total) {
+            await connection.rollback();
+            return res.status(400).json({ success: false, message: 'This update exceeds the student total fees' });
+        }
+
+        const newType = type || paymentType(payment.payment_type, 'PAYMENT');
+        await connection.execute(
+            'UPDATE payment_history SET amount_paid = ?, payment_type = ?, payment_status = ?, paid_at = ? WHERE id = ?',
+            [amount, newType, status, paidAt, paymentId]
+        );
+        const remaining = Math.round((total - paid) * 100) / 100;
+        await connection.execute(
+            'UPDATE students SET fees_paid = ?, remaining_fees = ? WHERE student_id = ?',
+            [paid, Math.max(0, remaining), studentId]
+        );
+        await connection.commit();
+
+        const fee = { student_id: studentId, total_fees: total, fees_paid: paid, remaining_fees: Math.max(0, remaining) };
+        return res.json({
+            success: true,
+            message: 'Payment record updated',
+            payment: { id: paymentId, student_id: studentId, amount_paid: amount, payment_type: newType, payment_status: status, paid_at: paidAt },
+            fee: fee,
+            status: feeStatus(fee)
+        });
+    } catch (err) {
+        await connection.rollback();
+        console.error('Admin payment update error:', err);
+        return res.status(500).json({ success: false, message: 'Could not update the payment record' });
+    } finally {
+        connection.release();
     }
 });
 
