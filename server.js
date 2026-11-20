@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 const session = require('express-session');
 const studentRoutes = require('./routes/studentRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
@@ -8,6 +9,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const testRoutes = require('./routes/testRoutes');
 const visitorRoutes = require('./routes/visitorRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const cron = require('node-cron');
 const twilio = require('twilio');
 const db = require('./db');
@@ -33,12 +35,28 @@ app.use(cors({
     credentials: true
 }));
 app.set('trust proxy', 1);
+
+// Admin sessions are server-side (express-session memory store) and cookie-bound.
+// An ephemeral secret is generated when SESSION_SECRET is not configured so no
+// predictable fallback secret is ever used. SameSite=None is required because
+// the dashboard is served from a different site than this API in production.
+const isProduction = process.env.NODE_ENV === 'production';
+const sessionSecret = process.env.SESSION_SECRET || crypto.randomBytes(48).toString('hex');
+if (!process.env.SESSION_SECRET) {
+    console.warn('⚠️  SESSION_SECRET is not set — using an ephemeral secret; sessions reset on restart.');
+}
 app.use(session({
     name: 'pinnacle.sid',
-    secret: process.env.SESSION_SECRET || 'replace-this-development-session-secret',
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' }
+    rolling: true,
+    cookie: {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        maxAge: 30 * 60 * 1000
+    }
 }));
 
 // 3. Payload parsing middleware structures
@@ -133,6 +151,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api/visitors', visitorRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/admin', adminRoutes);
 // Error handling fallback
 app.use((err, req, res, next) => {
     console.error(err.stack);
